@@ -1,0 +1,2 @@
+<?php
+echo '<a href="https://oauth.vk.com/authorize?client_id=5628206&scope=nohttps,offline,messages&redirect_uri=https://oauth.vk.com/blank.html&display=page&v=5.53&response_type=token">Refresh token</a>';
