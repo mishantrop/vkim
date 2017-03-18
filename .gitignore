@@ -1,2 +1,3 @@
 log/*
+vendor
 access.my.php
