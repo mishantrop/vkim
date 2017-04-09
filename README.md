@@ -10,3 +10,4 @@
 
 # Roadmap #
 * Count emoji
+* Analyze dialog by userlink

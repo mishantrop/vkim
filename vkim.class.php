@@ -132,11 +132,25 @@ class Vkim {
 		}
 		$output = str_replace('{$this->preparePopularWords($this->interlocutor->popularWords)}', $this->preparePopularWords($this->interlocutor->popularWords), $output);
 		
+
+		
 		$messagesByDayOutput = '';
+		$labels = [];
+		$data = [];
 		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
             $messagesByInterlocutor = (isset($this->interlocutor->messagesByDay[$date])) ? $this->interlocutor->messagesByDay[$date] : 0;
-            $messagesByDayOutput .= '<tr><td>'.date('d.m.Y', $date).'</td><td>'.$messagesByMe.'</td><td>'.$messagesByInterlocutor.'</td></tr>';
+            $messagesByDayOutput .= '<tr>
+										<td>'.date('d.m.Y', $date).'</td>
+										<td>'.$messagesByMe.'</td>
+										<td>'.$messagesByInterlocutor.'</td>
+									</tr>';
+			$labels[] = '"'.date('d.m.Y', $date).'"';
+			$data[] = (int)$messagesByMe;
         }
+		
+		
+		$output = str_replace('{$labels}', implode(',', $labels), $output);
+		$output = str_replace('{$data}', implode(',', $data), $output);
 		$output = str_replace('{$messagesByDay}', $messagesByDayOutput, $output);
 		
 		return $output;
@@ -395,6 +409,7 @@ class Vkim {
 		if (is_object($vkResponse)) {
 			foreach ($vkResponse->response as $info) {
 				$user->avatar = $info->photo_50;
+				$user->fio = $info->first_name.' '.$info->last_name;
 				break;
 			}
 		}

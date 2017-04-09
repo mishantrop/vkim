@@ -1,11 +1,13 @@
 <table class="double-table">
 	<tr>
-		<td>Я</td>
-		<td>Собеседник</td>
-	</tr>
-	<tr>
-		<td><img src="{$this->user->avatar}" /></td>
-		<td><img src="{$this->interlocutor->avatar}" /></td>
+		<td>
+			<img src="{$this->user->avatar}" />
+			<span>{$this->user->fio}</span>
+		</td>
+		<td>
+			<img src="{$this->interlocutor->avatar}" />
+			<span>{$this->interlocutor->fio}</span>
+		</td>
 	</tr>
 	<tr>
 		<td colspan="2" style="text-align: center; font-weight: bold;">Количество сообщений</td>
@@ -57,7 +59,16 @@
 		<td>{$this->preparePopularWords($this->interlocutor->popularWords)}</td>
 	</tr>
 </table>
-        
+
+<script>
+	window.vkim = {
+		data: {
+			labels: [{$labels}],
+			data: [{$data}],
+		}
+	};
+</script>
+<canvas id="chartMessages" width="400" height="100"></canvas>
 
 <table class="triple-table">
 	<tr>

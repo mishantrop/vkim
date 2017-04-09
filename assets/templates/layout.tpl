@@ -13,5 +13,38 @@
 </head>
 <body>
     {$output}
+
 </body>
+<script src="assets/js/moment.js"></script>
+<script src="assets/js/chart.min.js"></script>
+<script>
+	var ctx = document.querySelector('#chartMessages');
+	var myChart = new Chart(ctx, {
+		type: 'bar',
+		data: {
+			labels: window.vkim.data.labels,
+			datasets: [{
+				label: 'Count of messages',
+				data: window.vkim.data.data,
+				backgroundColor: 
+					'rgba(255, 99, 132, 0.2)'
+				,
+				borderColor: 
+					'rgba(255,99,132,1)'
+				,
+				borderWidth: 1
+			}]
+		},
+		options: {
+			scales: {
+				yAxes: [{
+					ticks: {
+						beginAtZero:true,
+						stacked: true
+					}
+				}]
+			}
+		}
+	});
+</script>
 </html>
