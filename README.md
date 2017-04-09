@@ -9,6 +9,5 @@
 * have a nice day.
 
 # Roadmap #
-* Count emoji
-* Analyze dialog by userlink
-* Avertage word length
+* Count emoji.
+* Show charts for both users.

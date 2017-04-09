@@ -327,7 +327,7 @@ class Vkim {
             'count' => 200,
             'offset' => 0,
             'user_id' => $this->interlocutor->id,
-            //'rev' => 1,
+            'rev' => 1,
         ];
         
         $messages = [];
