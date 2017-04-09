@@ -327,7 +327,7 @@ class Vkim {
             'count' => 200,
             'offset' => 0,
             'user_id' => $this->interlocutor->id,
-            'rev' => 1,
+            //'rev' => 1,
         ];
         
         $messages = [];
@@ -340,17 +340,11 @@ class Vkim {
             $properties['offset'] = $i * $limit;
             $vkResponse = $this->sendRequest('messages.getHistory', $properties);
             if (is_object($vkResponse)) {
-                if ($vkResponse->response->count == 0) {
-                    break;
-                }
-                $newMessages = $vkResponse->response->items;
+                $newMessages = (isset($vkResponse->response->items)) ? $vkResponse->response->items : [];
 				if (count($newMessages) == 0) {
 					break;
 				}
                 $messages = array_merge($messages, $newMessages);
-				if (count($messages) > $this->messagesLimit) {
-					break;
-				}
             }
         }
 
