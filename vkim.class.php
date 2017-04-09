@@ -10,6 +10,7 @@ class VkimUser {
 	 * @var string
 	 * https://pp.vk.me/...f6e/4-funfNRMwg.jpg
 	 */
+	public $audioCount;
 	public $avatar;
 	public $id;
 	public $messagesCount;
@@ -20,6 +21,7 @@ class VkimUser {
 	public $stickersCount;
 	
 	public function __construct($id) {
+        $this->audioCount = 0;
         $this->avatar = 'https://pp.userapi.com/c637616/v637616028/360fa/xaVazY3QUnk.jpg';
         $this->id = $id;
         $this->docsCount = 0;
@@ -113,37 +115,31 @@ class Vkim {
     public function PrintReport() {
 		$report = file_get_contents('assets/templates/report.tpl');
 		
-        $output = '<table>';
-        
-        // Общая статистика
-        $output .= '<table class="double-table">';
-        $output .= '<tr><td>Я</td><td>Собеседник</td></tr>';
-        $output .= '<tr><td><img src="'.$this->user->avatar.'" /></td><td><img src="'.$this->interlocutor->avatar.'" /></td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество сообщений</td></tr>';
-        $output .= '<tr><td>'.$this->user->messagesCount.'</td><td>'.$this->interlocutor->messagesCount.'</td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество стикеров</td></tr>';
-        $output .= '<tr><td>'.$this->user->stickersCount.'</td><td>'.$this->interlocutor->stickersCount.'</td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество репостов</td></tr>';
-        $output .= '<tr><td>'.$this->user->repostsCount.'</td><td>'.$this->interlocutor->repostsCount.'</td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество изображений</td></tr>';
-        $output .= '<tr><td>'.$this->user->imagesCount.'</td><td>'.$this->interlocutor->imagesCount.'</td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество файлов (gif в том числе)</td></tr>';
-        $output .= '<tr><td>'.$this->user->docsCount.'</td><td>'.$this->interlocutor->docsCount.'</td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество слов</td></tr>';
-        $output .= '<tr><td>'.$this->user->wordsCount.'</td><td>'.$this->interlocutor->wordsCount.'</td></tr>';
-        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Популярные слова</td></tr>';
-        $output .= '<tr><td>'.$this->preparePopularWords($this->user->popularWords).'</td><td>'.$this->preparePopularWords($this->interlocutor->popularWords).'</td></tr>';
-        $output .= '</table>';
-        
-        // Статистика по сообщениям в день
-        $output .= '<table class="triple-table">';
-        $output .= '<tr><td>Дата</td><td>Я</td><td>Собеседник</td></tr>';
-        foreach ($this->user->messagesByDay as $date => $messagesByMe) {
+        $output = $report;
+		
+		$a = get_object_vars($this->user);
+		foreach ($a as $a1 => $a2) {
+			if (is_scalar($a2)) {
+				$output = str_replace('{$this->user->'.$a1.'}', $a2, $output);
+			}
+		}
+		$output = str_replace('{$this->preparePopularWords($this->user->popularWords)}', $this->preparePopularWords($this->user->popularWords), $output);
+		$b = get_object_vars($this->interlocutor);
+		foreach ($b as $b1 => $b2) {
+			if (is_scalar($b2)) {
+				$output = str_replace('{$this->interlocutor->'.$b1.'}', $b2, $output);
+			}
+		}
+		$output = str_replace('{$this->preparePopularWords($this->interlocutor->popularWords)}', $this->preparePopularWords($this->interlocutor->popularWords), $output);
+		
+		$messagesByDayOutput = '';
+		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
             $messagesByInterlocutor = (isset($this->interlocutor->messagesByDay[$date])) ? $this->interlocutor->messagesByDay[$date] : 0;
-            $output .= '<tr><td>'.date('d.m.Y', $date).'</td><td>'.$messagesByMe.'</td><td>'.$messagesByInterlocutor.'</td></tr>';
+            $messagesByDayOutput .= '<tr><td>'.date('d.m.Y', $date).'</td><td>'.$messagesByMe.'</td><td>'.$messagesByInterlocutor.'</td></tr>';
         }
-        $output .= '</table>';
-        return $output;
+		$output = str_replace('{$messagesByDay}', $messagesByDayOutput, $output);
+		
+		return $output;
     }
     
     public function logResponse($methodName, $response) {
@@ -332,6 +328,9 @@ class Vkim {
 				$currentUser->attachmentsCount += count($message->attachments);
 				foreach ($message->attachments as $attachment) {
 					switch ($attachment->type) {
+						case 'audio':
+							$currentUser->audioCount++;
+							break;
 						case 'doc':
 							$currentUser->docsCount++;
 							break;

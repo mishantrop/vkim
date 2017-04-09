@@ -1,56 +1,56 @@
 <table class="double-table">
 	<tr>
-		<td>Я</td>
-		<td>Собеседник</td>
+		<td>РЇ</td>
+		<td>РЎРѕР±РµСЃРµРґРЅРёРє</td>
 	</tr>
 	<tr>
 		<td><img src="{$this->user->avatar}" /></td>
 		<td><img src="{$this->interlocutor->avatar}" /></td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Количество сообщений</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РљРѕР»РёС‡РµСЃС‚РІРѕ СЃРѕРѕР±С‰РµРЅРёР№</td>
 	</tr>
 	<tr>
 		<td>{$this->user->messagesCount}</td>
 		<td>{$this->interlocutor->messagesCount}</td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Количество стикеров</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РљРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚РёРєРµСЂРѕРІ</td>
 	</tr>
 	<tr>
 		<td>{$this->user->stickersCount}</td>
 		<td>{$this->interlocutor->stickersCount}</td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Количество репостов</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РљРѕР»РёС‡РµСЃС‚РІРѕ СЂРµРїРѕСЃС‚РѕРІ</td>
 	</tr>
 	<tr>
 		<td>{$this->user->repostsCount}</td>
 		<td>{$this->interlocutor->repostsCount}</td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Количество изображений</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РљРѕР»РёС‡РµСЃС‚РІРѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№</td>
 	</tr>
 	<tr>
 		<td>{$this->user->imagesCount}</td>
 		<td>{$this->interlocutor->imagesCount}</td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Количество файлов (gif в том числе)</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РљРѕР»РёС‡РµСЃС‚РІРѕ С„Р°Р№Р»РѕРІ (gif РІ С‚РѕРј С‡РёСЃР»Рµ)</td>
 	</tr>
 	<tr>
 		<td>{$this->user->docsCount}</td>
 		<td>{$this->interlocutor->docsCount}</td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Количество слов</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РљРѕР»РёС‡РµСЃС‚РІРѕ СЃР»РѕРІ</td>
 	</tr>
 	<tr>
 		<td>{$this->user->wordsCount}</td>
 		<td>{$this->interlocutor->wordsCount}</td>
 	</tr>
 	<tr>
-		<td colspan="2" style="text-align: center; font-weight: bold;">Популярные слова</td>
+		<td colspan="2" style="text-align: center; font-weight: bold;">РџРѕРїСѓР»СЏСЂРЅС‹Рµ СЃР»РѕРІР°</td>
 	</tr>
 	<tr>
 		<td>{$this->preparePopularWords($this->user->popularWords)}</td>
@@ -61,13 +61,9 @@
 
 <table class="triple-table">
 	<tr>
-		<td>Дата</td>
-		<td>Я</td>
-		<td>Собеседник</td>
+		<td>Р”Р°С‚Р°</td>
+		<td>РЇ</td>
+		<td>РЎРѕР±РµСЃРµРґРЅРёРє</td>
 	</tr>
-    <tr>
-		<td>{$date}</td>
-		<td>{$messagesByMe}</td>
-		<td>{$messagesByInterlocutor}</td>
-	</tr>
+    {$messagesByDay}
 </table>
