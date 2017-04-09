@@ -8,6 +8,10 @@
 * Execute index.php in browser.
 * have a nice day.
 
+# Screenshots #
+![Report, part 0](https://raw.githubusercontent.com/mishantrop/vkim/master/assets/images/report_0.png "Report, part 0")
+![Report, part 1](https://raw.githubusercontent.com/mishantrop/vkim/master/assets/images/report_2.png "Report, part 1")
+
 # Roadmap #
 * Count emoji.
 * Show charts for both users.
