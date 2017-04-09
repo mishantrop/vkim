@@ -15,8 +15,8 @@
     {$output}
 
 </body>
-<script src="assets/js/moment.js"></script>
-<script src="assets/js/chart.min.js"></script>
+<script src="node_modules/moment/min/moment.min.js"></script>
+<script src="node_modules/chart.js/dist/Chart.min.js"></script>
 <script>
 	var ctx = document.querySelector('#chartMessages');
 	var myChart = new Chart(ctx, {
