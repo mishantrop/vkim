@@ -27,13 +27,14 @@ error_reporting(-1);
 ini_set('display_errors', 1);
 include('vkim.class.php');
 
-$vk = new Vkim();
-$vk->setAccessToken($config['VK_ACCESS_TOKEN']);
-$vk->setSecret($config['VK_SECRET']);
+$vkim = new Vkim();
+$vkim->setAccessToken($config['VK_ACCESS_TOKEN']);
+$vkim->setSecret($config['VK_SECRET']);
 
-$vk->getDialogMessages();
-//$vk->dumpDialogs();
-echo $vk->PrintReport();
+$vkim->getUsersInfo();
+$vkim->getDialogMessages();
+//$vkim->dumpDialogs();
+echo $vkim->PrintReport();
 ?>
 </body>
 </html>

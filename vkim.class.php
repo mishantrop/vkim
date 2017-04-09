@@ -6,6 +6,11 @@ class VkimResponse {
 }
 
 class VkimUser {
+	/**
+	 * @var string
+	 * https://pp.vk.me/...f6e/4-funfNRMwg.jpg
+	 */
+	public $avatar;
 	public $id;
 	public $messagesCount;
 	public $wordsCount;
@@ -15,6 +20,7 @@ class VkimUser {
 	public $stickersCount;
 	
 	public function __construct($id) {
+        $this->avatar = 'https://pp.userapi.com/c637616/v637616028/360fa/xaVazY3QUnk.jpg';
         $this->id = $id;
         $this->docsCount = 0;
         $this->messagesCount = 0;
@@ -110,6 +116,7 @@ class Vkim {
         // Общая статистика
         $output .= '<table class="double-table">';
         $output .= '<tr><td>Я</td><td>Собеседник</td></tr>';
+        $output .= '<tr><td><img src="'.$this->user->avatar.'" /></td><td><img src="'.$this->interlocutor->avatar.'" /></td></tr>';
         $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество сообщений</td></tr>';
         $output .= '<tr><td>'.$this->user->messagesCount.'</td><td>'.$this->interlocutor->messagesCount.'</td></tr>';
         $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество стикеров</td></tr>';
@@ -365,4 +372,31 @@ class Vkim {
         
         
     }
+
+	// users.get
+	public function getUsersInfo() {
+
+		
+		foreach ([$this->user, $this->interlocutor] as $user) {
+			$this->getUserInfo($user);
+		}
+		
+	}
+	
+	// users.get
+	public function getUserInfo($user) {
+		$properties = [
+            'user_ids' => $user->id,
+            'fields' => 'photo_50',
+            'name_case' => 'Nom',
+        ];
+		$vkResponse = $this->sendRequest('users.get', $properties);
+		if (is_object($vkResponse)) {
+			foreach ($vkResponse->response as $info) {
+				$user->avatar = $info->photo_50;
+				break;
+			}
+		}
+	}
+		
 };
