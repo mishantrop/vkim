@@ -346,6 +346,9 @@ class Vkim {
 				}
                 $messages = array_merge($messages, $newMessages);
             }
+			if (count($messages) >= $this->messagesLimit) {
+				break;
+			}
         }
 
         $firstMessageDateRound = 0;
