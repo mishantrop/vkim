@@ -7,10 +7,14 @@ $vkim = new Vkim();
 $vkim->setAccessToken($config['VK_ACCESS_TOKEN']);
 $vkim->setSecret($config['VK_SECRET']);
 
-$vkim->getUsersInfo();
-$vkim->getDialogMessages();
-//$vkim->dumpDialogs();
-$output = $vkim->PrintReport();
+if (isset($_POST['run'])) {
+	$vkim->getUsersInfo();
+	$vkim->getDialogMessages();
+	//$vkim->dumpDialogs();
+	$output = $vkim->PrintReport();
+} else {
+	$output = file_get_contents('assets/templates/run.tpl');
+}
 
 $layout = file_get_contents('assets/templates/layout.tpl');
 $layout = str_replace('{$output}', $output, $layout);
