@@ -249,7 +249,7 @@ class Vkim {
         return false;
     }
     
-    private function cleanWords($text) {
+    private function cleanWord($text) {
         $text = str_replace(',', '', $text);
         $text = str_replace('.', '', $text);
         $text = str_replace('—', '', $text);
@@ -260,7 +260,7 @@ class Vkim {
         $text = str_replace('(', '', $text);
         $text = str_replace('"', '', $text);
         $text = str_replace('\'', '', $text);
-        $text = str_replace(':', '', $text);
+        //$text = str_replace(':', '', $text);
         $text = trim($text);
         return $text;
     }
@@ -274,9 +274,11 @@ class Vkim {
     
     private function getPopularWords($user, $words) {
         $ignore = [
-            'в', 'и', 'не', 'это', 'а', 'с', 'но', 'что', 'у', 'по', 'как',
-            'Ну', 'на', 'то', 'так', 'где', 'к', 'Да', 'да', 'А', 'было', 'Не',
-            'там', 'нет', 'Ага', '', '', '', '', '', '', '', '',
+            'в', 'и', 'не', 'а', 'с', 'но', 'у', 'по', 
+            'на', 'то', 'к', 'А',
+        ];
+        $ignoreParts = [
+            'http', 'https', 
         ];
 		$popularWords = $user->popularWords;
         //$ignore = [];
@@ -284,12 +286,17 @@ class Vkim {
             if (!$this->containsCiryllicLetters($word)) {
                 //continue;
             }
-            if (in_array($word, $ignore)) {
-                continue;
-            }
             if (empty($word)) {
                 continue;
             }
+            if (in_array($word, $ignore)) {
+                continue;
+            }
+			foreach ($ignoreParts as $ignorePart) {
+				if (substr_count($word, $ignorePart) > 0) {
+					continue(2);
+				}
+			}
             if (!isset($popularWords[$word])) {
                 $popularWords[$word] = 0;
             }
@@ -304,14 +311,10 @@ class Vkim {
 		$totalCount = 0;
 		$average = 0;
 		foreach ($user->popularWords as $word => $count) {
-			$length += strlen($word) * $count;
+			$length += mb_strlen($word) * $count;
 			$totalCount += $count;
 		}
-		
-		//echo '<pre>words: '.print_r($user->popularWords, true).'</pre>';
-		//echo '<br>length: '.$length.'<br>';
-		//echo '<br>count: '.$totalCount.'<br>';
-		
+
 		if ($totalCount > 0) {
 			$average = round($length/$totalCount, 4);
 		}
@@ -350,10 +353,10 @@ class Vkim {
 
         $firstMessageDateRound = 0;
         $lastMessageDateRound = 0;
-        foreach ($messages as $message) {
+        foreach ($messages as $messageIdx => $message) {
 			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
 			
-            $message->body = $this->cleanWords($message->body);
+            $message->body = $this->cleanWord($message->body);
             $messageDateRound = strtotime(date('00:00:00 d.m.Y', $message->date));
             if ($firstMessageDateRound == 0) {
                 $firstMessageDateRound = $messageDateRound;
