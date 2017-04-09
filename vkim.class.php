@@ -14,6 +14,7 @@ class VkimUser {
 	public $avatar;
 	public $id;
 	public $messagesCount;
+	public $averageWordLength;
 	public $wordsCount;
 	public $popularWords;
 	public $messagesByDay;
@@ -26,6 +27,7 @@ class VkimUser {
         $this->id = $id;
         $this->docsCount = 0;
         $this->messagesCount = 0;
+        $this->averageWordLength = 0;
         $this->wordsCount = 0;
         $this->popularWords = [];
         $this->messagesByDay = [];
@@ -43,7 +45,7 @@ class Vkim {
     private $lastResponse;
     private $user;
     private $interlocutor;
-	private $messagesLimit;
+	public $messagesLimit;
 
     public function __construct() {
 		$preset = json_decode(file_get_contents('preset.php'));
@@ -270,13 +272,14 @@ class Vkim {
         return $k2 * 256 + $k1;
     }
     
-    private function fillPopularWords(&$user, $words) {
+    private function getPopularWords($user, $words) {
         $ignore = [
             'в', 'и', 'не', 'это', 'а', 'с', 'но', 'что', 'у', 'по', 'как',
             'Ну', 'на', 'то', 'так', 'где', 'к', 'Да', 'да', 'А', 'было', 'Не',
             'там', 'нет', 'Ага', '', '', '', '', '', '', '', '',
         ];
-        $ignore = [];
+		$popularWords = $user->popularWords;
+        //$ignore = [];
         foreach ($words as $word) {
             if (!$this->containsCiryllicLetters($word)) {
                 //continue;
@@ -287,15 +290,35 @@ class Vkim {
             if (empty($word)) {
                 continue;
             }
-            if (!isset($user->popularWords[$word])) {
-                $user->popularWords[$word] = 0;
+            if (!isset($popularWords[$word])) {
+                $popularWords[$word] = 0;
             }
-            $user->popularWords[$word]++;
+            $popularWords[$word]++;
         }
-        asort($user->popularWords, SORT_NUMERIC);
-        $user->popularWords = array_reverse($user->popularWords);
+        asort($popularWords, SORT_NUMERIC);
+        return array_reverse($popularWords);
     }
     
+	private function getAverageWordLength($user) {
+		$length = 0;
+		$totalCount = 0;
+		$average = 0;
+		foreach ($user->popularWords as $word => $count) {
+			$length += strlen($word) * $count;
+			$totalCount += $count;
+		}
+		
+		//echo '<pre>words: '.print_r($user->popularWords, true).'</pre>';
+		//echo '<br>length: '.$length.'<br>';
+		//echo '<br>count: '.$totalCount.'<br>';
+		
+		if ($totalCount > 0) {
+			$average = round($length/$totalCount, 4);
+		}
+		
+		return $average;
+	}
+	
     public function getDialogMessages() {
         $properties = [
             'count' => 200,
@@ -368,7 +391,8 @@ class Vkim {
             
 			$currentUser->messagesCount++;
 			$currentUser->wordsCount += count($words);
-			$this->fillPopularWords($currentUser, $words);
+
+			$currentUser->popularWords = $this->getPopularWords($currentUser, $words);
 			if (!isset($currentUser->messagesByDay[$messageDateRound])) {
 				$currentUser->messagesByDay[$messageDateRound] = 0;
 			}
@@ -384,8 +408,10 @@ class Vkim {
                 $currentUser->messagesByDay[$dateRound] = 0;
             }
         }
-        
-        
+		
+		$this->user->averageWordLength = $this->getAverageWordLength($this->user);
+		$this->interlocutor->averageWordLength = $this->getAverageWordLength($this->interlocutor);
+		
     }
 
 	public function setInterlocutor($link) {

@@ -11,6 +11,11 @@ if (isset($_POST['run'])) {
 	if (isset($_POST['interlocutor'])) {
 		$vkim->setInterlocutor($_POST['interlocutor']);
 	}
+	if (isset($_POST['limit'])) {
+		$messagesLimit = (int)$_POST['limit'];
+		$messagesLimit = ($messagesLimit >= 0 && $messagesLimit <= 1000) ? $messagesLimit : 256;
+		$vkim->messagesLimit = $messagesLimit;
+	}
 	$vkim->getUsersInfo();
 	$vkim->getDialogMessages();
 	//$vkim->dumpDialogs();

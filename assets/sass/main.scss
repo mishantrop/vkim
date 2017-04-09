@@ -16,3 +16,13 @@ table td {
 .triple-table {
 	width: 33%;
 }
+.report-table {
+	margin-bottom: 40px;
+}
+.report-table td {
+	width: 33%;
+}
+.report-table td:nth-child(2) {
+	font-weight: bold;
+	text-align: center;
+}
