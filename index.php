@@ -8,10 +8,10 @@ $vkim->setAccessToken($config['VK_ACCESS_TOKEN']);
 $vkim->setSecret($config['VK_SECRET']);
 
 if (isset($_POST['run'])) {
-	if (isset($_POST['interlocutor'])) {
+	if (isset($_POST['interlocutor']) && !empty($_POST['interlocutor'])) {
 		$vkim->setInterlocutor($_POST['interlocutor']);
 	}
-	if (isset($_POST['limit'])) {
+	if (isset($_POST['limit']) && !empty($_POST['limit'])) {
 		$messagesLimit = (int)$_POST['limit'];
 		$messagesLimit = ($messagesLimit >= 0 && $messagesLimit <= 1000) ? $messagesLimit : 256;
 		$vkim->messagesLimit = $messagesLimit;

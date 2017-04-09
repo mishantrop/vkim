@@ -339,12 +339,15 @@ class Vkim {
         for ($i = 0; $i < $pages; $i++) {
             $properties['offset'] = $i * $limit;
             $vkResponse = $this->sendRequest('messages.getHistory', $properties);
-			//echo $this->printR($vkResponse);
             if (is_object($vkResponse)) {
                 if ($vkResponse->response->count == 0) {
                     break;
                 }
-                $messages = array_merge($messages, $vkResponse->response->items);
+                $newMessages = $vkResponse->response->items;
+				if (count($newMessages) == 0) {
+					break;
+				}
+                $messages = array_merge($messages, $newMessages);
 				if (count($messages) > $this->messagesLimit) {
 					break;
 				}

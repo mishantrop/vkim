@@ -1,21 +1,26 @@
 <table class="report-table">
 	<tr>
 		<td>
-			<img src="{$this->user->avatar}" />
-			<a href="{$this->user->id}">{$this->user->fio}</a>
+			<img src="{$this->user->avatar}" class="report__avatar" />
+			<a href="{$this->user->id}" class="report__link">{$this->user->fio}</a>
 		</td>
 		<td>
 
 		</td>
 		<td>
-			<img src="{$this->interlocutor->avatar}" />
-			<a href="{$this->interlocutor->id}">{$this->interlocutor->fio}</a>
+			<img src="{$this->interlocutor->avatar}" class="report__avatar" />
+			<a href="{$this->interlocutor->id}" class="report__link">{$this->interlocutor->fio}</a>
 		</td>
 	</tr>
 	<tr>
 		<td>{$this->user->messagesCount}</td>
 		<td>Количество сообщений</td>
 		<td>{$this->interlocutor->messagesCount}</td>
+	</tr>
+	<tr>
+		<td>{$this->user->wordsCount}</td>
+		<td>Количество слов</td>
+		<td>{$this->interlocutor->wordsCount}</td>
 	</tr>
 	<tr>
 		<td>{$this->user->averageWordLength}</td>
@@ -41,11 +46,6 @@
 		<td>{$this->user->docsCount}</td>
 		<td>Количество файлов (gif в том числе)</td>
 		<td>{$this->interlocutor->docsCount}</td>
-	</tr>
-	<tr>
-		<td>{$this->user->wordsCount}</td>
-		<td>Количество слов</td>
-		<td>{$this->interlocutor->wordsCount}</td>
 	</tr>
 	<tr>
 		<td>{$this->preparePopularWords($this->user->popularWords)}</td>
