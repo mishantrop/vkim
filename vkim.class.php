@@ -1,36 +1,48 @@
 <?php
 include('access.php');
 
+class VkimResponse {
+	
+}
+
+class VkimUser {
+	public $id;
+	public $messagesCount;
+	public $wordsCount;
+	public $popularWords;
+	public $messagesByDay;
+	public $repostsCount;
+	public $stickersCount;
+	
+	public function __construct($id) {
+        $this->id = $id;
+        $this->docsCount = 0;
+        $this->messagesCount = 0;
+        $this->wordsCount = 0;
+        $this->popularWords = [];
+        $this->messagesByDay = [];
+        $this->attachmentsCount = 0;
+        $this->imagesCount = 0;
+        $this->repostsCount = 0;
+        $this->stickersCount = 0;
+	}
+}
+
 class Vkim {
     private $accessToken = '';
     private $secret = '';
     private $apiVersion = '5.53';
-    
-    // Объект последнего запроса
     private $lastResponse;
-    
-    // Текущий пользователь
     private $user;
-    // Собеседник
     private $interlocutor;
-    // Сообщений по дате [14234234 => 2, 15234234 => 23, ...]
 
     public function __construct() {
-        $this->user = new StdClass();
-        $this->user->id = 1; // My id
-        $this->user->messagesCount = 0;
-        $this->user->wordsCount = 0;
-        $this->user->popularWords = [];
-        $this->user->messagesByDay = [];
-        
-        $this->interlocutor = new StdClass();
-        $this->interlocutor->id = 2; // Interlocutor id
-        $this->interlocutor->messagesCount = 0;
-        $this->interlocutor->wordsCount = 0;
-        $this->interlocutor->popularWords = [];
-        $this->interlocutor->messagesByDay = [];
-        
-        $this->lastResponse = null;
+		$preset = json_decode(file_get_contents('preset.php'));
+
+        $this->user = new VkimUser($preset->me);
+        $this->interlocutor = new VkimUser($preset->interlocutor);
+
+        $this->lastResponse = new VkimResponse();
         $this->logPath = $_SERVER['DOCUMENT_ROOT'].'/log';
     }
     
@@ -65,8 +77,19 @@ class Vkim {
         $requestUri = 'https://api.vk.com'.$methodString.'&sig='.$this->getSig($methodName, $requestParams);
         $response = file_get_contents($requestUri);
         $vkResponse = json_decode($response);
+		
+		if (!is_object($vkResponse)) {
+			return null;
+		}
+
         if (is_object($vkResponse)) {
-            $this->logResponse($methodName, $vkResponse);
+			if (isset($vkResponse->error) && is_object($vkResponse->error)) {
+				echo '<p>Error code: '.$vkResponse->error->error_code.'</p>';
+				echo '<p>Error message: '.$vkResponse->error->error_msg.'</p>';
+				echo '<p>Request params: '.print_r($vkResponse->error->request_params, true).'</p>';
+			} else {
+				$this->logResponse($methodName, $vkResponse);
+			}
         }
         return $vkResponse;
     }
@@ -83,6 +106,14 @@ class Vkim {
         $output .= '<tr><td>Я</td><td>Собеседник</td></tr>';
         $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество сообщений</td></tr>';
         $output .= '<tr><td>'.$this->user->messagesCount.'</td><td>'.$this->interlocutor->messagesCount.'</td></tr>';
+        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество стикеров</td></tr>';
+        $output .= '<tr><td>'.$this->user->stickersCount.'</td><td>'.$this->interlocutor->stickersCount.'</td></tr>';
+        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество репостов</td></tr>';
+        $output .= '<tr><td>'.$this->user->repostsCount.'</td><td>'.$this->interlocutor->repostsCount.'</td></tr>';
+        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество изображений</td></tr>';
+        $output .= '<tr><td>'.$this->user->imagesCount.'</td><td>'.$this->interlocutor->imagesCount.'</td></tr>';
+        $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество файлов (gif в том числе)</td></tr>';
+        $output .= '<tr><td>'.$this->user->docsCount.'</td><td>'.$this->interlocutor->docsCount.'</td></tr>';
         $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Количество слов</td></tr>';
         $output .= '<tr><td>'.$this->user->wordsCount.'</td><td>'.$this->interlocutor->wordsCount.'</td></tr>';
         $output .= '<tr><td colspan="2" style="text-align: center; font-weight: bold;">Популярные слова</td></tr>';
@@ -248,15 +279,16 @@ class Vkim {
             'rev' => 1,
         ];
         
-        //echo $this->printR($response);
         $messages = [];
         $offset = 0;
         $limit = 200;
-        
-        $cx = 100;
-        for ($i = 0; $i < $cx; $i++) {
+        $pages = 1;
+		
+		// Collect all messages
+        for ($i = 0; $i < $pages; $i++) {
             $properties['offset'] = $i * $limit;
             $vkResponse = $this->sendRequest('messages.getHistory', $properties);
+			//echo $this->printR($vkResponse);
             if (is_object($vkResponse)) {
                 if ($vkResponse->response->count == 0) {
                     break;
@@ -268,44 +300,57 @@ class Vkim {
         $firstMessageDateRound = 0;
         $lastMessageDateRound = 0;
         foreach ($messages as $message) {
+			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
+			
             $message->body = $this->cleanWords($message->body);
             $messageDateRound = strtotime(date('00:00:00 d.m.Y', $message->date));
             if ($firstMessageDateRound == 0) {
                 $firstMessageDateRound = $messageDateRound;
             }
             $lastMessageDateRound = $messageDateRound;
+			
+			// Attachments
+			if (isset($message->attachments) && is_array($message->attachments)) {
+				$currentUser->attachmentsCount += count($message->attachments);
+				foreach ($message->attachments as $attachment) {
+					switch ($attachment->type) {
+						case 'doc':
+							$currentUser->docsCount++;
+							break;
+						case 'photo':
+							$currentUser->imagesCount++;
+							break;
+						case 'sticker':
+							$currentUser->stickersCount++;
+							break;
+						case 'wall':
+							$currentUser->repostsCount++;
+							break;
+					}
+				}
+			}
+			
             if (empty($message->body)) {
                 continue;
             }
             $words = explode(' ', $message->body);
-            if ($message->from_id == $this->user->id) {
-                $this->user->messagesCount++;
-                $this->user->wordsCount += count($words);
-                $this->fillPopularWords($this->user, $words);
-                if (!isset($this->user->messagesByDay[$messageDateRound])) {
-                    $this->user->messagesByDay[$messageDateRound] = 0;
-                }
-                $this->user->messagesByDay[$messageDateRound]++;
-            } elseif ($message->from_id == $this->interlocutor->id) {
-                $this->interlocutor->messagesCount++;
-                $this->interlocutor->wordsCount += count($words);
-                $this->fillPopularWords($this->interlocutor, $words);
-                if (!isset($this->interlocutor->messagesByDay[$messageDateRound])) {
-                    $this->interlocutor->messagesByDay[$messageDateRound] = 0;
-                }
-                $this->interlocutor->messagesByDay[$messageDateRound]++;
-            }
+            
+			$currentUser->messagesCount++;
+			$currentUser->wordsCount += count($words);
+			$this->fillPopularWords($currentUser, $words);
+			if (!isset($currentUser->messagesByDay[$messageDateRound])) {
+				$currentUser->messagesByDay[$messageDateRound] = 0;
+			}
+			$currentUser->messagesByDay[$messageDateRound]++;
+            
         }
         for ($i = $firstMessageDateRound; $i <= $lastMessageDateRound; $i++) {
             $dateRound = $firstMessageDateRound + $i * 86400;
             if ($dateRound > $lastMessageDateRound) {
                 break;
             }
-            if (!isset($this->user->messagesByDay[$dateRound])) {
-                $this->user->messagesByDay[$dateRound] = 0;
-            }
-            if (!isset($this->interlocutor->messagesByDay[$dateRound])) {
-                $this->interlocutor->messagesByDay[$dateRound] = 0;
+            if (!isset($currentUser->messagesByDay[$dateRound])) {
+                $currentUser->messagesByDay[$dateRound] = 0;
             }
         }
         
