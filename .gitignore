@@ -1,3 +1,4 @@
 log/*
 vendor
 access.my.php
+preset.php
