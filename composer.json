@@ -1,0 +1,15 @@
+{
+    "name": "mishantrop/vkim",
+    "description": "Analyzes a users messages from vk.com",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mishantrop",
+            "email": "quasi-art@ya.ru"
+        }
+    ],
+    "require": {
+        "monolog/monolog": "^1.22"
+    }
+}

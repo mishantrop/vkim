@@ -111,6 +111,8 @@ class Vkim {
     }
     
     public function PrintReport() {
+		$report = file_get_contents('assets/templates/report.tpl');
+		
         $output = '<table>';
         
         // Общая статистика
