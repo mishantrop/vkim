@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#4279b8" />
     <meta name="msapplication-navbutton-color" content="#4279b8" />
     <meta name="apple-mobile-web-app-status-bar-style" content="#4279b8" />
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" href="/favicon.ico" />
     <link href="assets/css/main.min.css?v=05052009042017" rel="stylesheet" />
 </head>
 <body>

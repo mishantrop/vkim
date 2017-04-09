@@ -49,7 +49,7 @@ class Vkim {
 		$preset = json_decode(file_get_contents('preset.php'));
 		
 		if (!is_object($preset)) {
-			die('is not object!');
+			die('preset is not object!');
 		}
 		
 		$this->messagesLimit = $preset->messages;
@@ -388,14 +388,26 @@ class Vkim {
         
     }
 
+	public function setInterlocutor($link) {
+		if (is_string($link)) {
+			$cuts = [
+				'https://m.', 'https://', 'http://m.', 'http://', 
+				'https://new.', 'http://m.', 'vk.com/id', 'vk.com/', 
+			];
+			foreach ($cuts as $cut) {
+				$link = str_replace($cut, '', $link);
+			}
+			
+			$this->interlocutor->id = $link;
+			$this->getUserInfo($this->interlocutor);
+		}
+	}
+	
 	// users.get
 	public function getUsersInfo() {
-
-		
 		foreach ([$this->user, $this->interlocutor] as $user) {
 			$this->getUserInfo($user);
 		}
-		
 	}
 	
 	// users.get
@@ -408,6 +420,7 @@ class Vkim {
 		$vkResponse = $this->sendRequest('users.get', $properties);
 		if (is_object($vkResponse)) {
 			foreach ($vkResponse->response as $info) {
+				$user->id = (int)$info->id;
 				$user->avatar = $info->photo_50;
 				$user->fio = $info->first_name.' '.$info->last_name;
 				break;

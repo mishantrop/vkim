@@ -8,6 +8,9 @@ $vkim->setAccessToken($config['VK_ACCESS_TOKEN']);
 $vkim->setSecret($config['VK_SECRET']);
 
 if (isset($_POST['run'])) {
+	if (isset($_POST['interlocutor'])) {
+		$vkim->setInterlocutor($_POST['interlocutor']);
+	}
 	$vkim->getUsersInfo();
 	$vkim->getDialogMessages();
 	//$vkim->dumpDialogs();

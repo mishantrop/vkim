@@ -11,3 +11,4 @@
 # Roadmap #
 * Count emoji
 * Analyze dialog by userlink
+* Avertage word length
