@@ -31,14 +31,20 @@ class VkimUser {
 class Vkim {
     private $accessToken = '';
     private $secret = '';
-    private $apiVersion = '5.53';
+    private $apiVersion = '5.63';
     private $lastResponse;
     private $user;
     private $interlocutor;
+	private $messagesLimit;
 
     public function __construct() {
 		$preset = json_decode(file_get_contents('preset.php'));
-
+		
+		if (!is_object($preset)) {
+			die('is not object!');
+		}
+		
+		$this->messagesLimit = $preset->messages;
         $this->user = new VkimUser($preset->me);
         $this->interlocutor = new VkimUser($preset->interlocutor);
 
@@ -282,8 +288,8 @@ class Vkim {
         $messages = [];
         $offset = 0;
         $limit = 200;
-        $pages = 1;
-		
+        $pages = 100;
+	
 		// Collect all messages
         for ($i = 0; $i < $pages; $i++) {
             $properties['offset'] = $i * $limit;
@@ -294,6 +300,9 @@ class Vkim {
                     break;
                 }
                 $messages = array_merge($messages, $vkResponse->response->items);
+				if (count($messages) > $this->messagesLimit) {
+					break;
+				}
             }
         }
 
