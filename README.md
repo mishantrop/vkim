@@ -6,7 +6,7 @@
 * Config preset.php.
 * Get access_token and secret by executing token.php in browser.
 * Execute index.php in browser.
-* have a nice day.
+* Have a nice day.
 
 # Screenshots #
 ![Report, part 0](https://raw.githubusercontent.com/mishantrop/vkim/master/assets/images/report_0.png "Report, part 0")
