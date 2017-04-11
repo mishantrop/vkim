@@ -45,3 +45,92 @@ table td {
 	margin: 0 0 0 10px;
 	text-decoration: none;
 }
+
+
+.punchcard-table {
+	tr {
+		&:first-child {
+			text-align: center;
+		}
+	}
+	td {
+		vertical-align: middle;
+	}
+}
+.degree {
+	background-color: #222;
+	border-radius: 50%;
+	color: #fff;
+	display: block;
+	font-style: normal;
+	margin: 0 auto;
+	opacity: 0.1;
+	text-align: center;
+	
+	&--0 {
+		height: 14px;
+		line-height: 14px;
+		opacity: 0.4;
+		width: 14px;
+	}
+	&--1 {
+		height: 18px;
+		line-height: 18px;
+		opacity: 0.5;
+		width: 18px;
+	}
+	&--2 {
+		height: 20px;
+		line-height: 20px;
+		opacity: 0.55;
+		width: 20px;
+	}
+	&--3 {
+		height: 23px;
+		line-height: 23px;
+		opacity: 0.6;
+		width: 23px;
+	}
+	&--4 {
+		height: 26px;
+		line-height: 26px;
+		opacity: 0.65;
+		width: 26px;
+	}
+	&--5 {
+		height: 29px;
+		line-height: 29px;
+		opacity: 0.7;
+		width: 29px;
+	}
+	&--6 {
+		height: 32px;
+		line-height: 32px;
+		opacity: 0.75;
+		width: 32px;
+	}
+	&--7 {
+		height: 34px;
+		line-height: 34px;
+		opacity: 0.8;
+		width: 34px;
+	}
+	&--8 {
+		height: 36px;
+		line-height: 36px;
+		opacity: 0.85;
+		width: 36px;
+	}
+	&--9 {
+		height: 38px;
+		line-height: 38px;
+		opacity: 0.9;
+		width: 38px;
+	}
+	&--10 {
+		height: 40px;
+		line-height: 40px;
+		opacity: 1;
+		width: 40px;
+	}
+}

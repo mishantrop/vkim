@@ -158,13 +158,26 @@ class Vkim {
 			$data[] = (int)$messagesByMe;
         }
 		
+		$maxMessagesByHour = 0;
+		foreach ($this->user->punchcard as $weekday => $hours) {
+			foreach ($hours as $hour => $count) {
+				if ($count > $maxMessagesByHour) {
+					$maxMessagesByHour = $count;
+				}
+			}
+		}
 		$punchcardUserOutput = '';
 		foreach ($this->user->punchcard as $weekday => $hours) {
 			$weekdayName = $this->getWeekdayName($weekday);
 			$punchcardUserOutput .= '<tr>';
 			$punchcardUserOutput .= '<td>'.$weekdayName.'</td>';
 			foreach ($hours as $hour => $count) {
-				$punchcardUserOutput .= '<td><i>'.$count.'</i></td>';
+				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHour);
+				if ($count > 0) {
+					$punchcardUserOutput .= '<td><i class="degree degree--'.$punchDegree.'">'.$count.'</i></td>';
+				} else {
+					$punchcardUserOutput .= '<td>&nbsp;</td>';
+				}
 			}
 			$punchcardUserOutput .= '</tr>';
 		}
@@ -178,7 +191,13 @@ class Vkim {
 		return $output;
     }
 	
-	private function getWeekdayName($weekday) {
+	private function getPunchDegree(int $value, int $max) : int {
+		$k = ((int)$value > 0) ? $max/$value : 0;
+		
+		return ($k > 0) ? intval(10/$k) : 0;
+	}
+	
+	private function getWeekdayName(int $weekday) : string {
 		$weekdayName = '';
 		switch ($weekday) {
 			case 0:
