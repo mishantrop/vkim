@@ -144,9 +144,20 @@ class Vkim {
 		}
 		$output = str_replace('{$this->preparePopularWords($this->interlocutor->popularWords)}', $this->preparePopularWords($this->interlocutor->popularWords), $output);
 		
+		$labelsUser = [];
+		$dataUser = [];
+		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
+			$labelsUser[] = '"'.date('d.m.Y', $date).'"';
+			$dataUser[] = (int)$messagesByMe;
+        }
+		$labelsInterlocutor = [];
+		$dataInterlocutor = [];
+		foreach ($this->interlocutor->messagesByDay as $date => $messagesByMe) {
+			$labelsInterlocutor[] = '"'.date('d.m.Y', $date).'"';
+			$dataInterlocutor[] = (int)$messagesByMe;
+        }
+		
 		$messagesByDayOutput = '';
-		$labels = [];
-		$data = [];
 		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
             $messagesByInterlocutor = (isset($this->interlocutor->messagesByDay[$date])) ? $this->interlocutor->messagesByDay[$date] : 0;
             $messagesByDayOutput .= '<tr>
@@ -154,8 +165,6 @@ class Vkim {
 										<td>'.$messagesByMe.'</td>
 										<td>'.$messagesByInterlocutor.'</td>
 									</tr>';
-			$labels[] = '"'.date('d.m.Y', $date).'"';
-			$data[] = (int)$messagesByMe;
         }
 		
 		$maxMessagesByHourUser = 0;
@@ -210,8 +219,10 @@ class Vkim {
 		}
 		
 		
-		$output = str_replace('{$labels}', implode(',', $labels), $output);
-		$output = str_replace('{$data}', implode(',', $data), $output);
+		$output = str_replace('{$labelsUser}', implode(',', $labelsUser), $output);
+		$output = str_replace('{$dataUser}', implode(',', $dataUser), $output);
+		$output = str_replace('{$labelsInterlocutor}', implode(',', $labelsInterlocutor), $output);
+		$output = str_replace('{$dataInterlocutor}', implode(',', $dataInterlocutor), $output);
 		$output = str_replace('{$messagesByDay}', $messagesByDayOutput, $output);
 		$output = str_replace('{$punchcardUser}', $punchcardUserOutput, $output);
 		$output = str_replace('{$punchcardInterlocutor}', $punchcardInterlocutorOutput, $output);

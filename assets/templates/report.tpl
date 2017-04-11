@@ -57,26 +57,38 @@
 <h2>Timeline Chart</h2>
 <script>
 	window.vkim = {
-		data: {
-			labels: [{$labels}],
-			data: [{$data}],
+		user: {
+			labels: [{$labelsUser}],
+			data: [{$dataUser}],
+		},
+		interlocutor: {
+			labels: [{$labelsInterlocutor}],
+			data: [{$dataInterlocutor}],
 		}
 	};
 </script>
-<canvas id="chartMessages" width="400" height="100"></canvas>
+<h3>Me</h3>
+<canvas id="chartMessagesUser" width="400" height="100"></canvas>
+<h3>Interlocutor</h3>
+<canvas id="chartMessagesInterlocutor" width="400" height="100"></canvas>
 
 <h2>Timeline Table</h2>
-<table class="triple-table">
-	<tr>
-		<td>Дата</td>
-		<td>Я</td>
-		<td>Собеседник</td>
-	</tr>
-    {$messagesByDay}
-</table>
+<div class="spoiler">
+	<div class="spoiler__trigger">Показать или скрыть</div>
+	<div class="spoiler__content" style="display: none;">
+		<table class="triple-table">
+			<tr>
+				<td>Дата</td>
+				<td>Я</td>
+				<td>Собеседник</td>
+			</tr>
+		    {$messagesByDay}
+		</table>
+	</div>
+</div>
 
 <h2>Punchcard</h2>
-<h3>You</h3>
+<h3>Me</h3>
 <table class="punchcard-table">
 	<tr>
 		<td>День недели/Час</td>

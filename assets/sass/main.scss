@@ -46,6 +46,25 @@ table td {
 	text-decoration: none;
 }
 
+.spoiler {
+	border: 1px solid #eee;
+	
+	&__content {
+		background-color: #eee;
+		padding: 10px;
+	}
+	
+	&__trigger {
+		background-color: #eee;
+		cursor: pointer;
+		padding: 5 10px;
+		
+		&:hover {
+			background-color: #ddd;
+		}
+	}
+	
+}
 
 .punchcard-table {
 	tr {
@@ -57,6 +76,7 @@ table td {
 		vertical-align: middle;
 	}
 }
+
 .degree {
 	background-color: #222;
 	border-radius: 50%;

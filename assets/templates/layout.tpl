@@ -13,38 +13,18 @@
 </head>
 <body>
     {$output}
-
+	
+	<footer class="footer">
+		<div>
+			<a href="https://github.com/mishantrop/vkim" target="_blank" rel="noopener">https://github.com/mishantrop/vkim</a>
+		</div>
+		<div>
+			2017
+		</div>
+	</footer>
 </body>
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
 <script src="node_modules/moment/min/moment.min.js"></script>
 <script src="node_modules/chart.js/dist/Chart.min.js"></script>
-<script>
-	var ctx = document.querySelector('#chartMessages');
-	var myChart = new Chart(ctx, {
-		type: 'bar',
-		data: {
-			labels: window.vkim.data.labels,
-			datasets: [{
-				label: 'Count of messages',
-				data: window.vkim.data.data,
-				backgroundColor: 
-					'rgba(255, 99, 132, 0.2)'
-				,
-				borderColor: 
-					'rgba(255,99,132,1)'
-				,
-				borderWidth: 1
-			}]
-		},
-		options: {
-			scales: {
-				yAxes: [{
-					ticks: {
-						beginAtZero:true,
-						stacked: true
-					}
-				}]
-			}
-		}
-	});
-</script>
+<script src="assets/js/main.min.js"></script>
 </html>
