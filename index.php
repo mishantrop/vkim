@@ -13,7 +13,7 @@ if (isset($_POST['run'])) {
 	}
 	if (isset($_POST['limit']) && !empty($_POST['limit'])) {
 		$messagesLimit = (int)$_POST['limit'];
-		$messagesLimit = ($messagesLimit >= 0 && $messagesLimit <= 1000) ? $messagesLimit : 256;
+		$messagesLimit = ($messagesLimit >= 0 && $messagesLimit <= 2000) ? $messagesLimit : 256;
 		$vkim->messagesLimit = $messagesLimit;
 	}
 	$vkim->getUsersInfo();

@@ -37,13 +37,13 @@ class VkimUser {
         $this->repostsCount = 0;
         $this->stickersCount = 0;
         $this->punchcard = [
-			0 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 			1 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 			2 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 			3 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 			4 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 			5 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 			6 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			7 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		];
 	}
 }
@@ -158,21 +158,32 @@ class Vkim {
 			$data[] = (int)$messagesByMe;
         }
 		
-		$maxMessagesByHour = 0;
+		$maxMessagesByHourUser = 0;
 		foreach ($this->user->punchcard as $weekday => $hours) {
 			foreach ($hours as $hour => $count) {
-				if ($count > $maxMessagesByHour) {
-					$maxMessagesByHour = $count;
+				if ($count > $maxMessagesByHourUser) {
+					$maxMessagesByHourUser = $count;
 				}
 			}
 		}
+		
+		$maxMessagesByHourInterlocutor = 0;
+		foreach ($this->user->punchcard as $weekday => $hours) {
+			foreach ($hours as $hour => $count) {
+				if ($count > $maxMessagesByHourInterlocutor) {
+					$maxMessagesByHourInterlocutor = $count;
+				}
+			}
+		}
+		
+		
 		$punchcardUserOutput = '';
 		foreach ($this->user->punchcard as $weekday => $hours) {
 			$weekdayName = $this->getWeekdayName($weekday);
 			$punchcardUserOutput .= '<tr>';
 			$punchcardUserOutput .= '<td>'.$weekdayName.'</td>';
 			foreach ($hours as $hour => $count) {
-				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHour);
+				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourUser);
 				if ($count > 0) {
 					$punchcardUserOutput .= '<td><i class="degree degree--'.$punchDegree.'">'.$count.'</i></td>';
 				} else {
@@ -182,43 +193,60 @@ class Vkim {
 			$punchcardUserOutput .= '</tr>';
 		}
 		
+		$punchcardInterlocutorOutput = '';
+		foreach ($this->interlocutor->punchcard as $weekday => $hours) {
+			$weekdayName = $this->getWeekdayName($weekday);
+			$punchcardInterlocutorOutput .= '<tr>';
+			$punchcardInterlocutorOutput .= '<td>'.$weekdayName.'</td>';
+			foreach ($hours as $hour => $count) {
+				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourInterlocutor);
+				if ($count > 0) {
+					$punchcardInterlocutorOutput .= '<td><i class="degree degree--'.$punchDegree.'">'.$count.'</i></td>';
+				} else {
+					$punchcardInterlocutorOutput .= '<td>&nbsp;</td>';
+				}
+			}
+			$punchcardInterlocutorOutput .= '</tr>';
+		}
+		
 		
 		$output = str_replace('{$labels}', implode(',', $labels), $output);
 		$output = str_replace('{$data}', implode(',', $data), $output);
 		$output = str_replace('{$messagesByDay}', $messagesByDayOutput, $output);
 		$output = str_replace('{$punchcardUser}', $punchcardUserOutput, $output);
+		$output = str_replace('{$punchcardInterlocutor}', $punchcardInterlocutorOutput, $output);
 		
 		return $output;
     }
 	
 	private function getPunchDegree(int $value, int $max) : int {
 		$k = ((int)$value > 0) ? $max/$value : 0;
-		
-		return ($k > 0) ? intval(10/$k) : 0;
+		$punch = ($k > 0) ? intval(10/$k) : 0;
+		return ($punch > 10) ? 10 : $punch;
 	}
 	
 	private function getWeekdayName(int $weekday) : string {
 		$weekdayName = '';
 		switch ($weekday) {
-			case 0:
+			case 1:
 				$weekdayName = 'Monday';
 				break;
-			case 1:
+			case 2:
 				$weekdayName = 'Tuesday';
 				break;
-			case 2:
+			case 3:
 				$weekdayName = 'Wednesday';
 				break;
-			case 3:
+			case 4:
 				$weekdayName = 'Thursday';
 				break;
-			case 4:
+			case 5:
 				$weekdayName = 'Friday';
 				break;
-			case 5:
+			case 6:
 				$weekdayName = 'Saturday';
 				break;
-			case 6:
+			case 7:
 				$weekdayName = 'Sunday';
 				break;
 		}
@@ -412,7 +440,9 @@ class Vkim {
 					break;
 				}
                 $messages = array_merge($messages, $newMessages);
-            }
+            } else {
+				
+			}
 			if (count($messages) >= $this->messagesLimit) {
 				break;
 			}
@@ -478,7 +508,7 @@ class Vkim {
 			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
 			
 			$hour = (int)date('H', $message->date);
-			$weekday = rand(0,6);
+			$weekday = (int)date('N', $message->date);
 			$currentUser->punchcard[$weekday][$hour]++;
 		}
 		
