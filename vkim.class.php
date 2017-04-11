@@ -6,11 +6,11 @@ class VkimResponse {
 }
 
 class VkimUser {
+	public $audioCount;
 	/**
 	 * @var string
 	 * https://pp.vk.me/...f6e/4-funfNRMwg.jpg
 	 */
-	public $audioCount;
 	public $avatar;
 	public $id;
 	public $messagesCount;
@@ -20,6 +20,7 @@ class VkimUser {
 	public $messagesByDay;
 	public $repostsCount;
 	public $stickersCount;
+	public $punchcard;
 	
 	public function __construct($id) {
         $this->audioCount = 0;
@@ -35,6 +36,15 @@ class VkimUser {
         $this->imagesCount = 0;
         $this->repostsCount = 0;
         $this->stickersCount = 0;
+        $this->punchcard = [
+			0 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			1 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			2 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			3 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			4 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			5 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			6 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		];
 	}
 }
 
@@ -134,8 +144,6 @@ class Vkim {
 		}
 		$output = str_replace('{$this->preparePopularWords($this->interlocutor->popularWords)}', $this->preparePopularWords($this->interlocutor->popularWords), $output);
 		
-
-		
 		$messagesByDayOutput = '';
 		$labels = [];
 		$data = [];
@@ -150,13 +158,53 @@ class Vkim {
 			$data[] = (int)$messagesByMe;
         }
 		
+		$punchcardUserOutput = '';
+		foreach ($this->user->punchcard as $weekday => $hours) {
+			$weekdayName = $this->getWeekdayName($weekday);
+			$punchcardUserOutput .= '<tr>';
+			$punchcardUserOutput .= '<td>'.$weekdayName.'</td>';
+			foreach ($hours as $hour => $count) {
+				$punchcardUserOutput .= '<td><i>'.$count.'</i></td>';
+			}
+			$punchcardUserOutput .= '</tr>';
+		}
+		
 		
 		$output = str_replace('{$labels}', implode(',', $labels), $output);
 		$output = str_replace('{$data}', implode(',', $data), $output);
 		$output = str_replace('{$messagesByDay}', $messagesByDayOutput, $output);
+		$output = str_replace('{$punchcardUser}', $punchcardUserOutput, $output);
 		
 		return $output;
     }
+	
+	private function getWeekdayName($weekday) {
+		$weekdayName = '';
+		switch ($weekday) {
+			case 0:
+				$weekdayName = 'Monday';
+				break;
+			case 1:
+				$weekdayName = 'Tuesday';
+				break;
+			case 2:
+				$weekdayName = 'Wednesday';
+				break;
+			case 3:
+				$weekdayName = 'Thursday';
+				break;
+			case 4:
+				$weekdayName = 'Friday';
+				break;
+			case 5:
+				$weekdayName = 'Saturday';
+				break;
+			case 6:
+				$weekdayName = 'Sunday';
+				break;
+		}
+		return $weekdayName;
+	}
     
     public function logResponse($methodName, $response) {
         $microtime = microtime(true);
@@ -274,11 +322,11 @@ class Vkim {
     
     private function getPopularWords($user, $words) {
         $ignore = [
-            'в', 'и', 'не', 'а', 'с', 'но', 'у', 'по', 
+            'в', 'и', 'не', 'а', 'с', 'но', 'у', 'по',
             'на', 'то', 'к', 'А',
         ];
         $ignoreParts = [
-            'http', 'https', 
+            'http', 'https',
         ];
 		$popularWords = $user->popularWords;
         //$ignore = [];
@@ -353,6 +401,9 @@ class Vkim {
 
         $firstMessageDateRound = 0;
         $lastMessageDateRound = 0;
+		
+		// Popular words
+		// Words in timeline
         foreach ($messages as $messageIdx => $message) {
 			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
 			
@@ -402,6 +453,17 @@ class Vkim {
 			$currentUser->messagesByDay[$messageDateRound]++;
             
         }
+		
+		// Punchcard
+		foreach ($messages as $messageIdx => $message) {
+			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
+			
+			$hour = (int)date('H', $message->date);
+			$weekday = rand(0,6);
+			$currentUser->punchcard[$weekday][$hour]++;
+		}
+		
+		
         for ($i = $firstMessageDateRound; $i <= $lastMessageDateRound; $i++) {
             $dateRound = $firstMessageDateRound + $i * 86400;
             if ($dateRound > $lastMessageDateRound) {
@@ -420,8 +482,8 @@ class Vkim {
 	public function setInterlocutor($link) {
 		if (is_string($link)) {
 			$cuts = [
-				'https://m.', 'https://', 'http://m.', 'http://', 
-				'https://new.', 'http://m.', 'vk.com/id', 'vk.com/', 
+				'https://m.', 'https://', 'http://m.', 'http://',
+				'https://new.', 'http://m.', 'vk.com/id', 'vk.com/',
 			];
 			foreach ($cuts as $cut) {
 				$link = str_replace($cut, '', $link);
