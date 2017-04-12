@@ -185,6 +185,8 @@ class Vkim {
 			}
 		}
 		
+		// Punchcard
+		$punchTpl = file_get_contents('assets/templates/punchItem.tpl');
 		
 		$punchcardUserOutput = '';
 		foreach ($this->user->punchcard as $weekday => $hours) {
@@ -194,7 +196,10 @@ class Vkim {
 			foreach ($hours as $hour => $count) {
 				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourUser);
 				if ($count > 0) {
-					$punchcardUserOutput .= '<td><i class="degree degree--'.$punchDegree.'">'.$count.'</i></td>';
+					$a = $punchTpl;
+					$a .= str_replace('{$punchDegree}', $punchDegree, $a);
+					$a .= str_replace('{$count}', $count, $a);
+					$punchcardUserOutput .= $a;
 				} else {
 					$punchcardUserOutput .= '<td>&nbsp;</td>';
 				}
@@ -210,7 +215,10 @@ class Vkim {
 			foreach ($hours as $hour => $count) {
 				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourInterlocutor);
 				if ($count > 0) {
-					$punchcardInterlocutorOutput .= '<td><i class="degree degree--'.$punchDegree.'">'.$count.'</i></td>';
+					$a = $punchTpl;
+					$a .= str_replace('{$punchDegree}', $punchDegree, $a);
+					$a .= str_replace('{$count}', $count, $a);
+					$punchcardInterlocutorOutput .= $a;
 				} else {
 					$punchcardInterlocutorOutput .= '<td>&nbsp;</td>';
 				}
