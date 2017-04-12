@@ -15,7 +15,5 @@
 
 # Roadmap #
 * Count emoji.
-* Show charts for both users.
-* Move second table (after chart) in report to spoiler.
 * Cache dialogs.
 * Check timezone for messages.
