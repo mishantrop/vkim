@@ -196,10 +196,10 @@ class Vkim {
 			foreach ($hours as $hour => $count) {
 				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourUser);
 				if ($count > 0) {
-					$a = $punchTpl;
-					$a .= str_replace('{$punchDegree}', $punchDegree, $a);
-					$a .= str_replace('{$count}', $count, $a);
-					$punchcardUserOutput .= $a;
+					$punchTplProcessed = $punchTpl;
+					$punchTplProcessed = str_replace('{$punchDegree}', $punchDegree, $punchTplProcessed);
+					$punchTplProcessed = str_replace('{$count}', $count, $punchTplProcessed);
+					$punchcardUserOutput .= $punchTplProcessed;
 				} else {
 					$punchcardUserOutput .= '<td>&nbsp;</td>';
 				}
@@ -215,10 +215,10 @@ class Vkim {
 			foreach ($hours as $hour => $count) {
 				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourInterlocutor);
 				if ($count > 0) {
-					$a = $punchTpl;
-					$a .= str_replace('{$punchDegree}', $punchDegree, $a);
-					$a .= str_replace('{$count}', $count, $a);
-					$punchcardInterlocutorOutput .= $a;
+					$punchTplProcessed = $punchTpl;
+					$punchTplProcessed = str_replace('{$punchDegree}', $punchDegree, $punchTplProcessed);
+					$punchTplProcessed = str_replace('{$count}', $count, $punchTplProcessed);
+					$punchcardInterlocutorOutput .= $punchTplProcessed;
 				} else {
 					$punchcardInterlocutorOutput .= '<td>&nbsp;</td>';
 				}

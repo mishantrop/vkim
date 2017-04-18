@@ -48,6 +48,11 @@
 		<td>{$this->interlocutor->docsCount}</td>
 	</tr>
 	<tr>
+		<td>{$this->user->audioCount}</td>
+		<td>Количество аудиозаписей</td>
+		<td>{$this->interlocutor->audioCount}</td>
+	</tr>
+	<tr>
 		<td>{$this->preparePopularWords($this->user->popularWords)}</td>
 		<td>Популярные слова</td>
 		<td>{$this->preparePopularWords($this->interlocutor->popularWords)}</td>
