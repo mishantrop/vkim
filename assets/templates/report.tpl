@@ -1,14 +1,14 @@
 <table class="report-table">
 	<tr>
 		<td>
-			<img src="{$this->user->avatar}" class="report__avatar" />
+			<img src="{$this->user->avatar}" class="report__avatar" alt="" />
 			<a href="{$this->user->id}" class="report__link">{$this->user->fio}</a>
 		</td>
 		<td>
 
 		</td>
 		<td>
-			<img src="{$this->interlocutor->avatar}" class="report__avatar" />
+			<img src="{$this->interlocutor->avatar}" class="report__avatar" alt="" />
 			<a href="{$this->interlocutor->id}" class="report__link">{$this->interlocutor->fio}</a>
 		</td>
 	</tr>

@@ -1,0 +1,10 @@
+.punchcard-table {
+	tr {
+		&:first-child {
+			text-align: center;
+		}
+	}
+	td {
+		vertical-align: middle;
+	}
+}

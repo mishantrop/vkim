@@ -1,0 +1,19 @@
+.spoiler {
+	border: 1px solid #eee;
+
+	&__content {
+		background-color: #eee;
+		padding: 10px;
+	}
+
+	&__trigger {
+		background-color: #eee;
+		cursor: pointer;
+		padding: 5 10px;
+
+		&:hover {
+			background-color: #ddd;
+		}
+	}
+
+}

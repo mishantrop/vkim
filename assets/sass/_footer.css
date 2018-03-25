@@ -1,0 +1,22 @@
+.footer {
+  background-color: #222;
+
+  &__years {
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  &__copyright {
+    padding: 10px 0;
+    text-align: center;
+
+    a {
+      color: #fff;
+
+      &:hover {
+        color: #d3f;
+      }
+    }
+  }
+}

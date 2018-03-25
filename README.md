@@ -19,3 +19,4 @@
 * Count emoji.
 * Cache dialogs.
 * Check timezone for messages.
+* Highlight popular word of another interlocutor on hover.

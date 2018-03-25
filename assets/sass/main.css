@@ -1,0 +1,11 @@
+@import '_grid';
+@import '_degree';
+@import '_footer';
+@import '_punchcard-table';
+@import '_report';
+@import '_spoiler';
+
+body {
+  padding: 0;
+  font-family: Arial;
+}
