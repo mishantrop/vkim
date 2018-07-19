@@ -4,7 +4,7 @@
   "description": "vkim",
   "main": "index.php",
   "scripts": {
-    "start": "webpack --watch --progress --colors",
+    "start": "php71 -S 0.0.0.0:8000",
     "js": "webpack --watch --progress --colors",
     "css": "gulp"
   },

@@ -1,51 +1,9 @@
 <?php
 include('access.php');
+include('VkimUser.class.php');
 
 class VkimResponse {
-	
-}
 
-class VkimUser {
-	public $audioCount;
-	/**
-	 * @var string
-	 * https://pp.vk.me/...f6e/4-funfNRMwg.jpg
-	 */
-	public $avatar;
-	public $id;
-	public $messagesCount;
-	public $averageWordLength;
-	public $wordsCount;
-	public $popularWords;
-	public $messagesByDay;
-	public $repostsCount;
-	public $stickersCount;
-	public $punchcard;
-	
-	public function __construct($id) {
-        $this->audioCount = 0;
-        $this->avatar = 'https://pp.userapi.com/c637616/v637616028/360fa/xaVazY3QUnk.jpg';
-        $this->id = $id;
-        $this->docsCount = 0;
-        $this->messagesCount = 0;
-        $this->averageWordLength = 0;
-        $this->wordsCount = 0;
-        $this->popularWords = [];
-        $this->messagesByDay = [];
-        $this->attachmentsCount = 0;
-        $this->imagesCount = 0;
-        $this->repostsCount = 0;
-        $this->stickersCount = 0;
-        $this->punchcard = [
-			1 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-			2 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-			3 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-			4 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-			5 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-			6 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-			7 => [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		];
-	}
 }
 
 class Vkim {
@@ -59,11 +17,11 @@ class Vkim {
 
     public function __construct() {
 		$preset = json_decode(file_get_contents('preset.php'));
-		
+
 		if (!is_object($preset)) {
 			die('preset is not object!');
 		}
-		
+
 		$this->messagesLimit = $preset->messages;
         $this->user = new VkimUser($preset->me);
         $this->interlocutor = new VkimUser($preset->interlocutor);
@@ -71,30 +29,30 @@ class Vkim {
         $this->lastResponse = new VkimResponse();
         $this->logPath = $_SERVER['DOCUMENT_ROOT'].'/log';
     }
-    
+
     public function setAccessToken($accessToken) {
         $this->accessToken = $accessToken;
     }
-    
+
     public function setSecret($secret) {
         $this->secret = $secret;
     }
-    
+
     public function getAccessToken() {
         return $this->accessToken;
     }
-    
+
     public function getSecret() {
         return $this->secret;
     }
-    
+
     private function getSig($methodName, $requestParams) {
         $getParams = http_build_query($requestParams);
         $methodString = '/method/'.$methodName.'?'. $getParams;
         $sig = md5($methodString.$this->getSecret());
         return $sig;
     }
-    
+
     public function sendRequest($methodName, $requestParams) {
         $requestParams['v'] = $this->apiVersion;
         $requestParams['access_token'] = $this->getAccessToken();
@@ -103,7 +61,7 @@ class Vkim {
         $requestUri = 'https://api.vk.com'.$methodString.'&sig='.$this->getSig($methodName, $requestParams);
         $response = file_get_contents($requestUri);
         $vkResponse = json_decode($response);
-		
+
 		if (!is_object($vkResponse)) {
 			return null;
 		}
@@ -119,16 +77,16 @@ class Vkim {
         }
         return $vkResponse;
     }
-    
+
     public function printR($variable) {
         return '<pre>'.print_r($variable, true).'</pre>';
     }
-    
+
     public function PrintReport() {
 		$report = file_get_contents('assets/templates/report.tpl');
-		
+
         $output = $report;
-		
+
 		$a = get_object_vars($this->user);
 		foreach ($a as $a1 => $a2) {
 			if (is_scalar($a2)) {
@@ -143,7 +101,7 @@ class Vkim {
 			}
 		}
 		$output = str_replace('{$this->preparePopularWords($this->interlocutor->popularWords)}', $this->preparePopularWords($this->interlocutor->popularWords), $output);
-		
+
 		$labelsUser = [];
 		$dataUser = [];
 		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
@@ -156,7 +114,7 @@ class Vkim {
 			$labelsInterlocutor[] = '"'.date('d.m.Y', $date).'"';
 			$dataInterlocutor[] = (int)$messagesByMe;
         }
-		
+
 		$messagesByDayOutput = '';
 		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
             $messagesByInterlocutor = (isset($this->interlocutor->messagesByDay[$date])) ? $this->interlocutor->messagesByDay[$date] : 0;
@@ -166,7 +124,7 @@ class Vkim {
 										<td>'.$messagesByInterlocutor.'</td>
 									</tr>';
         }
-		
+
 		$maxMessagesByHourUser = 0;
 		foreach ($this->user->punchcard as $weekday => $hours) {
 			foreach ($hours as $hour => $count) {
@@ -175,7 +133,7 @@ class Vkim {
 				}
 			}
 		}
-		
+
 		$maxMessagesByHourInterlocutor = 0;
 		foreach ($this->user->punchcard as $weekday => $hours) {
 			foreach ($hours as $hour => $count) {
@@ -184,10 +142,10 @@ class Vkim {
 				}
 			}
 		}
-		
+
 		// Punchcard
 		$punchTpl = file_get_contents('assets/templates/punchItem.tpl');
-		
+
 		$punchcardUserOutput = '';
 		foreach ($this->user->punchcard as $weekday => $hours) {
 			$weekdayName = $this->getWeekdayName($weekday);
@@ -206,7 +164,7 @@ class Vkim {
 			}
 			$punchcardUserOutput .= '</tr>';
 		}
-		
+
 		$punchcardInterlocutorOutput = '';
 		foreach ($this->interlocutor->punchcard as $weekday => $hours) {
 			$weekdayName = $this->getWeekdayName($weekday);
@@ -225,8 +183,8 @@ class Vkim {
 			}
 			$punchcardInterlocutorOutput .= '</tr>';
 		}
-		
-		
+
+
 		$output = str_replace('{$labelsUser}', implode(',', $labelsUser), $output);
 		$output = str_replace('{$dataUser}', implode(',', $dataUser), $output);
 		$output = str_replace('{$labelsInterlocutor}', implode(',', $labelsInterlocutor), $output);
@@ -234,16 +192,16 @@ class Vkim {
 		$output = str_replace('{$messagesByDay}', $messagesByDayOutput, $output);
 		$output = str_replace('{$punchcardUser}', $punchcardUserOutput, $output);
 		$output = str_replace('{$punchcardInterlocutor}', $punchcardInterlocutorOutput, $output);
-		
+
 		return $output;
     }
-	
+
 	private function getPunchDegree(int $value, int $max) : int {
 		$k = ((int)$value > 0) ? $max/$value : 0;
 		$punch = ($k > 0) ? intval(10/$k) : 0;
 		return ($punch > 10) ? 10 : $punch;
 	}
-	
+
 	private function getWeekdayName(int $weekday) : string {
 		$weekdayName = '';
 		switch ($weekday) {
@@ -271,7 +229,7 @@ class Vkim {
 		}
 		return $weekdayName;
 	}
-    
+
     public function logResponse($methodName, $response) {
         $microtime = microtime(true);
         $microtime = str_replace(' ', '', $microtime);
@@ -293,15 +251,11 @@ class Vkim {
         }
         return false;
     }
-    
+
     public function isSuccessResponse($response) {
-        if (is_object($response)) {
-            if (isset($response->error) && is_object($response->error))
-            return true;
-        }
-        return false;
+        return is_object($response) && isset($response->error) && is_object($response->error);
     }
-    
+
     public function dumpDialogs() {
         $offset = 0;
         $limit = 20;
@@ -310,10 +264,10 @@ class Vkim {
             'count' => $limit,
             'offset' => $offset,
         ];
-        
+
         //echo $this->printR($response);
         $dialogs = [];
-        
+
         $cx = 1;
         for ($i = 0; $i < $cx; $i++) {
             $properties['offset'] = $i * $limit;
@@ -341,7 +295,7 @@ class Vkim {
             }
         }
     }
-    
+
     private function preparePopularWords($words) {
         $words = array_slice($words, 0, 100);
         $outputArray = [];
@@ -351,7 +305,7 @@ class Vkim {
         }
         return implode(', ', $outputArray);
     }
-    
+
     private function containsCiryllicLetters($string) {
         $length = strlen($string);
         for ($i = 0; $i < $length; $i++) {
@@ -362,7 +316,7 @@ class Vkim {
         }
         return false;
     }
-    
+
     private function cleanWord($text) {
         $text = str_replace(',', '', $text);
         $text = str_replace('.', '', $text);
@@ -378,14 +332,14 @@ class Vkim {
         $text = trim($text);
         return $text;
     }
-    
+
     private function uniOrd($u) {
         $k = mb_convert_encoding($u, 'UCS-2LE', 'UTF-8');
         $k1 = ord(substr($k, 0, 1));
         $k2 = ord(substr($k, 1, 1));
         return $k2 * 256 + $k1;
     }
-    
+
     private function getPopularWords($user, $words) {
         $ignore = [
             'в', 'и', 'не', 'а', 'с', 'но', 'у', 'по',
@@ -419,7 +373,7 @@ class Vkim {
         asort($popularWords, SORT_NUMERIC);
         return array_reverse($popularWords);
     }
-    
+
 	private function getAverageWordLength($user) {
 		$length = 0;
 		$totalCount = 0;
@@ -432,10 +386,10 @@ class Vkim {
 		if ($totalCount > 0) {
 			$average = round($length/$totalCount, 4);
 		}
-		
+
 		return $average;
 	}
-	
+
     public function getDialogMessages() {
         $properties = [
             'count' => 200,
@@ -443,12 +397,12 @@ class Vkim {
             'user_id' => $this->interlocutor->id,
             'rev' => 1,
         ];
-        
+
         $messages = [];
         $offset = 0;
         $limit = 200;
         $pages = 100;
-	
+
 		// Collect all messages
         for ($i = 0; $i < $pages; $i++) {
             $properties['offset'] = $i * $limit;
@@ -460,7 +414,7 @@ class Vkim {
 				}
                 $messages = array_merge($messages, $newMessages);
             } else {
-				
+
 			}
 			if (count($messages) >= $this->messagesLimit) {
 				break;
@@ -469,19 +423,19 @@ class Vkim {
 
         $firstMessageDateRound = 0;
         $lastMessageDateRound = 0;
-		
+
 		// Popular words
 		// Words in timeline
         foreach ($messages as $messageIdx => $message) {
 			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
-			
+
             $message->body = $this->cleanWord($message->body);
             $messageDateRound = strtotime(date('00:00:00 d.m.Y', $message->date));
             if ($firstMessageDateRound == 0) {
                 $firstMessageDateRound = $messageDateRound;
             }
             $lastMessageDateRound = $messageDateRound;
-			
+
 			// Attachments
 			if (isset($message->attachments) && is_array($message->attachments)) {
 				$currentUser->attachmentsCount += count($message->attachments);
@@ -505,12 +459,12 @@ class Vkim {
 					}
 				}
 			}
-			
+
             if (empty($message->body)) {
                 continue;
             }
             $words = explode(' ', $message->body);
-            
+
 			$currentUser->messagesCount++;
 			$currentUser->wordsCount += count($words);
 
@@ -519,19 +473,19 @@ class Vkim {
 				$currentUser->messagesByDay[$messageDateRound] = 0;
 			}
 			$currentUser->messagesByDay[$messageDateRound]++;
-            
+
         }
-		
+
 		// Punchcard
 		foreach ($messages as $messageIdx => $message) {
 			$currentUser = ($message->from_id == $this->user->id) ? $this->user : $this->interlocutor;
-			
+
 			$hour = (int)date('H', $message->date);
 			$weekday = (int)date('N', $message->date);
 			$currentUser->punchcard[$weekday][$hour]++;
 		}
-		
-		
+
+
         for ($i = $firstMessageDateRound; $i <= $lastMessageDateRound; $i++) {
             $dateRound = $firstMessageDateRound + $i * 86400;
             if ($dateRound > $lastMessageDateRound) {
@@ -541,10 +495,10 @@ class Vkim {
                 $currentUser->messagesByDay[$dateRound] = 0;
             }
         }
-		
+
 		$this->user->averageWordLength = $this->getAverageWordLength($this->user);
 		$this->interlocutor->averageWordLength = $this->getAverageWordLength($this->interlocutor);
-		
+
     }
 
 	public function setInterlocutor($link) {
@@ -553,22 +507,20 @@ class Vkim {
 				'https://m.', 'https://', 'http://m.', 'http://',
 				'https://new.', 'http://m.', 'vk.com/id', 'vk.com/',
 			];
-			foreach ($cuts as $cut) {
-				$link = str_replace($cut, '', $link);
-			}
-			
+			$link = str_replace($cuts, '', $link);
+
 			$this->interlocutor->id = $link;
 			$this->getUserInfo($this->interlocutor);
 		}
 	}
-	
+
 	// users.get
 	public function getUsersInfo() {
 		foreach ([$this->user, $this->interlocutor] as $user) {
 			$this->getUserInfo($user);
 		}
 	}
-	
+
 	// users.get
 	public function getUserInfo($user) {
 		$properties = [
@@ -586,5 +538,5 @@ class Vkim {
 			}
 		}
 	}
-		
+
 };
