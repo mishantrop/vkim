@@ -1,11 +1,8 @@
 <?php
-include('access.php');
-include('Utils.class.php');
-include('VkimUser.class.php');
-
-class VkimResponse {
-
-}
+include 'access.php';
+include 'Utils.class.php';
+include 'VkimResponse.class.php';
+include 'VkimUser.class.php';
 
 class Vkim {
     private $accessToken = '';
@@ -16,7 +13,8 @@ class Vkim {
     private $interlocutor;
 	public $messagesLimit;
 
-    public function __construct() {
+    public function __construct()
+    {
 		$preset = json_decode(file_get_contents('preset.php'));
 
 		if (!is_object($preset)) {
@@ -31,23 +29,27 @@ class Vkim {
         $this->logPath = $_SERVER['DOCUMENT_ROOT'].'/log';
     }
 
-    public function setAccessToken($accessToken) {
+    public function setAccessToken(string $accessToken)
+    {
         $this->accessToken = $accessToken;
     }
 
-    public function setSecret($secret) {
+    public function setSecret(string $secret)
+    {
         $this->secret = $secret;
     }
 
-    public function getAccessToken() {
+    public function getAccessToken(): string
+    {
         return $this->accessToken;
     }
 
-    public function getSecret() {
+    public function getSecret(): string
+    {
         return $this->secret;
     }
 
-    private function getSig(string $methodName, array $requestParams):string
+    private function getSig(string $methodName, array $requestParams): string
     {
         $getParams = http_build_query($requestParams);
         $methodString = '/method/'.$methodName.'?'. $getParams;
@@ -55,7 +57,8 @@ class Vkim {
         return $sig;
     }
 
-    public function sendRequest($methodName, $requestParams) {
+    public function sendRequest(string $methodName, $requestParams)
+    {
         $requestParams['v'] = $this->apiVersion;
         $requestParams['access_token'] = $this->getAccessToken();
         $getParams = http_build_query($requestParams);
@@ -80,11 +83,13 @@ class Vkim {
         return $vkResponse;
     }
 
-    public function printR($variable) {
+    public function printR($variable)
+    {
         return '<pre>'.print_r($variable, true).'</pre>';
     }
 
-    public function getMessagesByDayLabels($messagesByDay) {
+    public function getMessagesByDayLabels(array $messagesByDay): array
+    {
         $labelsUser = [];
     	foreach ($messagesByDay as $date => $messagesByMe) {
     		$labelsUser[] = '"'.date('d.m.Y', $date).'"';
@@ -92,7 +97,8 @@ class Vkim {
         return $labelsUser;
     }
 
-    public function getMessagesByDayData($messagesByDay) {
+    public function getMessagesByDayData(array $messagesByDay): array
+    {
     	$dataUser = [];
     	foreach ($messagesByDay as $date => $messagesByMe) {
     		$dataUser[] = (int)$messagesByMe;
@@ -100,7 +106,8 @@ class Vkim {
         return $dataUser;
     }
 
-    public function replaceScalarUserPlaceholders($user, $output, $userPlaceholder) {
+    public function replaceScalarUserPlaceholders(VkimUser $user, string $output, string $userPlaceholder): string
+    {
         $a = get_object_vars($user);
 		foreach ($a as $a1 => $a2) {
 			if (is_scalar($a2)) {
@@ -111,7 +118,8 @@ class Vkim {
         return $output;
     }
 
-    public function PrintReport() {
+    public function PrintReport(): string
+    {
 		$report = file_get_contents('assets/templates/report.tpl');
 
         $output = $report;
@@ -155,7 +163,8 @@ class Vkim {
 		return $output;
     }
 
-    public function getMaxMessagesByHour($user) {
+    public function getMaxMessagesByHour(VkimUser $user): int
+    {
         $maxMessagesByHour = 0;
         foreach ($user->punchcard as $weekday => $hours) {
 			foreach ($hours as $hour => $count) {
@@ -167,7 +176,8 @@ class Vkim {
         return $maxMessagesByHour;
     }
 
-    public function getUserPunchcardOutput($user, $maxMessagesByHour, $punchTpl) {
+    public function getUserPunchcardOutput(VkimUser $user, $maxMessagesByHour, $punchTpl)
+    {
         $punchcardOutput = '';
         foreach ($user->punchcard as $weekday => $hours) {
             $weekdayName = Utils::getWeekdayName($weekday);
@@ -189,13 +199,15 @@ class Vkim {
         return $punchcardOutput;
     }
 
-	private function getPunchDegree(int $value, int $max) : int {
+	private function getPunchDegree(int $value, int $max): int
+    {
 		$k = ((int)$value > 0) ? $max/$value : 0;
 		$punch = ($k > 0) ? intval(10/$k) : 0;
 		return ($punch > 10) ? 10 : $punch;
 	}
 
-    public function logResponse($methodName, $response) {
+    public function logResponse(string $methodName, $response)
+    {
         $microtime = microtime(true);
         $microtime = str_replace(' ', '', $microtime);
         $methodName = str_replace('.', '_', $methodName);
@@ -217,11 +229,13 @@ class Vkim {
         return false;
     }
 
-    public function isSuccessResponse($response) {
+    public function isSuccessResponse($response)
+    {
         return is_object($response) && isset($response->error) && is_object($response->error);
     }
 
-    public function dumpDialogs() {
+    public function dumpDialogs()
+    {
         $offset = 0;
         $limit = 20;
         $properties = [
@@ -261,7 +275,8 @@ class Vkim {
         }
     }
 
-    private function preparePopularWords($words) {
+    private function preparePopularWords($words)
+    {
         $words = array_slice($words, 0, 100);
         $outputArray = [];
         //$words = array_flip($words);
@@ -271,7 +286,8 @@ class Vkim {
         return implode(', ', $outputArray);
     }
 
-    private function cleanWord($text) {
+    private function cleanWord($text)
+    {
         $text = str_replace(',', '', $text);
         $text = str_replace('.', '', $text);
         $text = str_replace('—', '', $text);
@@ -287,7 +303,8 @@ class Vkim {
         return $text;
     }
 
-    private function getPopularWords($user, $words) {
+    private function getPopularWords(VkimUser $user, array $words): array
+    {
         $ignore = [
             'в', 'и', 'не', 'а', 'с', 'но', 'у', 'по',
             'на', 'то', 'к', 'А',
@@ -321,7 +338,8 @@ class Vkim {
         return array_reverse($popularWords);
     }
 
-	private function getAverageWordLength($user) {
+	private function getAverageWordLength($user)
+    {
 		$length = 0;
 		$totalCount = 0;
 		$average = 0;
@@ -337,7 +355,8 @@ class Vkim {
 		return $average;
 	}
 
-    public function getDialogMessages() {
+    public function getDialogMessages()
+    {
         $properties = [
             'count' => 200,
             'offset' => 0,
@@ -452,7 +471,8 @@ class Vkim {
 
     }
 
-	public function setInterlocutor($link) {
+	public function setInterlocutor(string $link)
+    {
 		if (is_string($link)) {
 			$cuts = [
 				'https://m.', 'https://', 'http://m.', 'http://',
@@ -466,14 +486,16 @@ class Vkim {
 	}
 
 	// users.get
-	public function getUsersInfo() {
+	public function getUsersInfo()
+    {
 		foreach ([$this->user, $this->interlocutor] as $user) {
 			$this->getUserInfo($user);
 		}
 	}
 
 	// users.get
-	public function getUserInfo($user) {
+	public function getUserInfo(VkimUser $user)
+    {
 		$properties = [
             'user_ids' => $user->id,
             'fields' => 'photo_50',

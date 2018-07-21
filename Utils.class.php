@@ -1,7 +1,8 @@
 <?php
 class Utils
 {
-    public static function getWeekdayName(int $weekday) : string {
+    public static function getWeekdayName(int $weekday): string
+    {
 		$weekdayName = '';
 		switch ($weekday) {
 			case 1:
@@ -29,7 +30,8 @@ class Utils
 		return $weekdayName;
 	}
 
-    public static function containsCiryllicLetters($string) {
+    public static function containsCiryllicLetters(string $string): bool
+    {
         $length = strlen($string);
         for ($i = 0; $i < $length; $i++) {
             $code = Utils::uniOrd($string[$i]);
@@ -40,7 +42,8 @@ class Utils
         return false;
     }
 
-    public static function uniOrd($u) {
+    public static function uniOrd(string $u): string
+    {
         $k = mb_convert_encoding($u, 'UCS-2LE', 'UTF-8');
         $k1 = ord(substr($k, 0, 1));
         $k2 = ord(substr($k, 1, 1));
