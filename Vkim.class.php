@@ -1,5 +1,6 @@
 <?php
 include('access.php');
+include('Utils.class.php');
 include('VkimUser.class.php');
 
 class VkimResponse {
@@ -46,7 +47,8 @@ class Vkim {
         return $this->secret;
     }
 
-    private function getSig($methodName, $requestParams) {
+    private function getSig(string $methodName, array $requestParams):string
+    {
         $getParams = http_build_query($requestParams);
         $methodString = '/method/'.$methodName.'?'. $getParams;
         $sig = md5($methodString.$this->getSecret());
@@ -82,38 +84,45 @@ class Vkim {
         return '<pre>'.print_r($variable, true).'</pre>';
     }
 
+    public function getMessagesByDayLabels($messagesByDay) {
+        $labelsUser = [];
+    	foreach ($messagesByDay as $date => $messagesByMe) {
+    		$labelsUser[] = '"'.date('d.m.Y', $date).'"';
+        }
+        return $labelsUser;
+    }
+
+    public function getMessagesByDayData($messagesByDay) {
+    	$dataUser = [];
+    	foreach ($messagesByDay as $date => $messagesByMe) {
+    		$dataUser[] = (int)$messagesByMe;
+        }
+        return $dataUser;
+    }
+
+    public function replaceScalarUserPlaceholders($user, $output, $userPlaceholder) {
+        $a = get_object_vars($user);
+		foreach ($a as $a1 => $a2) {
+			if (is_scalar($a2)) {
+				$output = str_replace('{$this->'.$userPlaceholder.'->'.$a1.'}', $a2, $output);
+			}
+		}
+		$output = str_replace('{$this->preparePopularWords($this->'.$userPlaceholder.'->popularWords)}', $this->preparePopularWords($user->popularWords), $output);
+        return $output;
+    }
+
     public function PrintReport() {
 		$report = file_get_contents('assets/templates/report.tpl');
 
         $output = $report;
+		$output = $this->replaceScalarUserPlaceholders($this->user, $output, 'user');
+		$output = $this->replaceScalarUserPlaceholders($this->user, $output, 'interlocutor');
 
-		$a = get_object_vars($this->user);
-		foreach ($a as $a1 => $a2) {
-			if (is_scalar($a2)) {
-				$output = str_replace('{$this->user->'.$a1.'}', $a2, $output);
-			}
-		}
-		$output = str_replace('{$this->preparePopularWords($this->user->popularWords)}', $this->preparePopularWords($this->user->popularWords), $output);
-		$b = get_object_vars($this->interlocutor);
-		foreach ($b as $b1 => $b2) {
-			if (is_scalar($b2)) {
-				$output = str_replace('{$this->interlocutor->'.$b1.'}', $b2, $output);
-			}
-		}
-		$output = str_replace('{$this->preparePopularWords($this->interlocutor->popularWords)}', $this->preparePopularWords($this->interlocutor->popularWords), $output);
+		$labelsUser = $this->getMessagesByDayLabels($this->user->messagesByDay);
+		$dataUser = $this->getMessagesByDayData($this->user->messagesByDay);
 
-		$labelsUser = [];
-		$dataUser = [];
-		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
-			$labelsUser[] = '"'.date('d.m.Y', $date).'"';
-			$dataUser[] = (int)$messagesByMe;
-        }
-		$labelsInterlocutor = [];
-		$dataInterlocutor = [];
-		foreach ($this->interlocutor->messagesByDay as $date => $messagesByMe) {
-			$labelsInterlocutor[] = '"'.date('d.m.Y', $date).'"';
-			$dataInterlocutor[] = (int)$messagesByMe;
-        }
+		$labelsInterlocutor = $this->getMessagesByDayLabels($this->interlocutor->messagesByDay);
+		$dataInterlocutor = $this->getMessagesByDayData($this->interlocutor->messagesByDay);
 
 		$messagesByDayOutput = '';
 		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
@@ -125,65 +134,15 @@ class Vkim {
 									</tr>';
         }
 
-		$maxMessagesByHourUser = 0;
-		foreach ($this->user->punchcard as $weekday => $hours) {
-			foreach ($hours as $hour => $count) {
-				if ($count > $maxMessagesByHourUser) {
-					$maxMessagesByHourUser = $count;
-				}
-			}
-		}
+		$maxMessagesByHourUser = $this->getMaxMessagesByHour($this->user);
+		$maxMessagesByHourInterlocutor = $this->getMaxMessagesByHour($this->interlocutor);
 
-		$maxMessagesByHourInterlocutor = 0;
-		foreach ($this->user->punchcard as $weekday => $hours) {
-			foreach ($hours as $hour => $count) {
-				if ($count > $maxMessagesByHourInterlocutor) {
-					$maxMessagesByHourInterlocutor = $count;
-				}
-			}
-		}
 
 		// Punchcard
 		$punchTpl = file_get_contents('assets/templates/punchItem.tpl');
 
-		$punchcardUserOutput = '';
-		foreach ($this->user->punchcard as $weekday => $hours) {
-			$weekdayName = $this->getWeekdayName($weekday);
-			$punchcardUserOutput .= '<tr>';
-			$punchcardUserOutput .= '<td>'.$weekdayName.'</td>';
-			foreach ($hours as $hour => $count) {
-				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourUser);
-				if ($count > 0) {
-					$punchTplProcessed = $punchTpl;
-					$punchTplProcessed = str_replace('{$punchDegree}', $punchDegree, $punchTplProcessed);
-					$punchTplProcessed = str_replace('{$count}', $count, $punchTplProcessed);
-					$punchcardUserOutput .= $punchTplProcessed;
-				} else {
-					$punchcardUserOutput .= '<td>&nbsp;</td>';
-				}
-			}
-			$punchcardUserOutput .= '</tr>';
-		}
-
-		$punchcardInterlocutorOutput = '';
-		foreach ($this->interlocutor->punchcard as $weekday => $hours) {
-			$weekdayName = $this->getWeekdayName($weekday);
-			$punchcardInterlocutorOutput .= '<tr>';
-			$punchcardInterlocutorOutput .= '<td>'.$weekdayName.'</td>';
-			foreach ($hours as $hour => $count) {
-				$punchDegree = $this->getPunchDegree($count, $maxMessagesByHourInterlocutor);
-				if ($count > 0) {
-					$punchTplProcessed = $punchTpl;
-					$punchTplProcessed = str_replace('{$punchDegree}', $punchDegree, $punchTplProcessed);
-					$punchTplProcessed = str_replace('{$count}', $count, $punchTplProcessed);
-					$punchcardInterlocutorOutput .= $punchTplProcessed;
-				} else {
-					$punchcardInterlocutorOutput .= '<td>&nbsp;</td>';
-				}
-			}
-			$punchcardInterlocutorOutput .= '</tr>';
-		}
-
+		$punchcardUserOutput = $this->getUserPunchcardOutput($this->user, $maxMessagesByHourUser, $punchTpl);
+		$punchcardInterlocutorOutput = $this->getUserPunchcardOutput($this->interlocutor, $maxMessagesByHourInterlocutor, $punchTpl);
 
 		$output = str_replace('{$labelsUser}', implode(',', $labelsUser), $output);
 		$output = str_replace('{$dataUser}', implode(',', $dataUser), $output);
@@ -196,38 +155,44 @@ class Vkim {
 		return $output;
     }
 
+    public function getMaxMessagesByHour($user) {
+        $maxMessagesByHour = 0;
+        foreach ($user->punchcard as $weekday => $hours) {
+			foreach ($hours as $hour => $count) {
+				if ($count > $maxMessagesByHour) {
+					$maxMessagesByHour = $count;
+				}
+			}
+		}
+        return $maxMessagesByHour;
+    }
+
+    public function getUserPunchcardOutput($user, $maxMessagesByHour, $punchTpl) {
+        $punchcardOutput = '';
+        foreach ($user->punchcard as $weekday => $hours) {
+            $weekdayName = Utils::getWeekdayName($weekday);
+            $punchcardOutput .= '<tr>';
+            $punchcardOutput .= '<td>'.$weekdayName.'</td>';
+            foreach ($hours as $hour => $count) {
+                $punchDegree = $this->getPunchDegree($count, $maxMessagesByHour);
+                if ($count > 0) {
+                    $punchTplProcessed = $punchTpl;
+                    $punchTplProcessed = str_replace('{$punchDegree}', $punchDegree, $punchTplProcessed);
+                    $punchTplProcessed = str_replace('{$count}', $count, $punchTplProcessed);
+                    $punchcardOutput .= $punchTplProcessed;
+                } else {
+                    $punchcardOutput .= '<td>&nbsp;</td>';
+                }
+            }
+            $punchcardOutput .= '</tr>';
+        }
+        return $punchcardOutput;
+    }
+
 	private function getPunchDegree(int $value, int $max) : int {
 		$k = ((int)$value > 0) ? $max/$value : 0;
 		$punch = ($k > 0) ? intval(10/$k) : 0;
 		return ($punch > 10) ? 10 : $punch;
-	}
-
-	private function getWeekdayName(int $weekday) : string {
-		$weekdayName = '';
-		switch ($weekday) {
-			case 1:
-				$weekdayName = 'Monday';
-				break;
-			case 2:
-				$weekdayName = 'Tuesday';
-				break;
-			case 3:
-				$weekdayName = 'Wednesday';
-				break;
-			case 4:
-				$weekdayName = 'Thursday';
-				break;
-			case 5:
-				$weekdayName = 'Friday';
-				break;
-			case 6:
-				$weekdayName = 'Saturday';
-				break;
-			case 7:
-				$weekdayName = 'Sunday';
-				break;
-		}
-		return $weekdayName;
 	}
 
     public function logResponse($methodName, $response) {
@@ -306,17 +271,6 @@ class Vkim {
         return implode(', ', $outputArray);
     }
 
-    private function containsCiryllicLetters($string) {
-        $length = strlen($string);
-        for ($i = 0; $i < $length; $i++) {
-            $code = $this->uniOrd($string[$i]);
-            if ($code >= 1040 && $code <= 1103) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private function cleanWord($text) {
         $text = str_replace(',', '', $text);
         $text = str_replace('.', '', $text);
@@ -333,13 +287,6 @@ class Vkim {
         return $text;
     }
 
-    private function uniOrd($u) {
-        $k = mb_convert_encoding($u, 'UCS-2LE', 'UTF-8');
-        $k1 = ord(substr($k, 0, 1));
-        $k2 = ord(substr($k, 1, 1));
-        return $k2 * 256 + $k1;
-    }
-
     private function getPopularWords($user, $words) {
         $ignore = [
             'в', 'и', 'не', 'а', 'с', 'но', 'у', 'по',
@@ -351,7 +298,7 @@ class Vkim {
 		$popularWords = $user->popularWords;
         //$ignore = [];
         foreach ($words as $word) {
-            if (!$this->containsCiryllicLetters($word)) {
+            if (!Utils::containsCiryllicLetters($word)) {
                 //continue;
             }
             if (empty($word)) {
@@ -445,7 +392,11 @@ class Vkim {
 							$currentUser->audioCount++;
 							break;
 						case 'doc':
-							$currentUser->docsCount++;
+                            if ($attachment->doc->type === 5) {
+                                $currentUser->voiceCount++;
+                            } else {
+    							$currentUser->docsCount++;
+                            }
 							break;
 						case 'photo':
 							$currentUser->imagesCount++;

@@ -10,6 +10,7 @@ class VkimUser {
 	public $messagesCount;
 	public $averageWordLength;
 	public $wordsCount;
+	public $voiceCount;
 	public $popularWords;
 	public $messagesByDay;
 	public $repostsCount;
@@ -22,6 +23,7 @@ class VkimUser {
         $this->id = $id;
         $this->docsCount = 0;
         $this->messagesCount = 0;
+        $this->voiceCount = 0;
         $this->averageWordLength = 0;
         $this->wordsCount = 0;
         $this->popularWords = [];
