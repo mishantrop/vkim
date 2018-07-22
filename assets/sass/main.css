@@ -9,3 +9,8 @@ body {
   padding: 0;
   font-family: Arial;
 }
+
+.section {
+  margin: 0 0 2rem;
+  padding: 2rem 0;
+}

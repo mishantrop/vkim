@@ -1,4 +1,5 @@
 table {
+	background-color: #fff;
 	border-collapse: collapse;
 }
 table td {
@@ -22,22 +23,44 @@ table td {
 	margin-bottom: 40px;
 }
 .report-table td {
-	width: 33%;
+
 }
-.report-table td:nth-child(2) {
+.report-table tr:nth-child(even) {
+	background-color: #eee;
+}
+.report-table tr:hover {
+	background-color: #ddd;
+}
+.report-table td:nth-child(1) {
 	font-weight: bold;
 	text-align: center;
+	width: 20%;
+}
+.report-table td:nth-child(2) {
+	text-align: center;
+	width: 40%;
+}
+.report-table td:nth-child(3) {
+	text-align: center;
+	width: 40%;
 }
 
 .report__avatar {
 	border-radius: 50%;
-	float: left;
+	display: block;
 	height: 50px;
+	margin: 0 0 0.5rem;
 	width: 50px;
 }
 .report__link {
 	color: #c3008f;
-	float: left;
+	display: block;
 	margin: 0 0 0 10px;
 	text-decoration: none;
+}
+.report__bage {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	text-align: center;
 }
