@@ -12,14 +12,9 @@ try {
         if (isset($_POST['interlocutor']) && !empty($_POST['interlocutor'])) {
             $vkim->setInterlocutor($_POST['interlocutor']);
         }
-        if (isset($_POST['limit']) && !empty($_POST['limit'])) {
-            $messagesLimit = (int)$_POST['limit'];
-            $messagesLimit = ($messagesLimit >= 0 && $messagesLimit <= 2000) ? $messagesLimit : 256;
-            $vkim->messagesLimit = $messagesLimit;
-        }
+        $vkim->messagesLimit = (isset($_POST['limit']) && !empty($_POST['limit'])) ? (int)$_POST['limit'] : 256;
         $vkim->getUsersInfo();
         $vkim->getDialogMessages();
-        //$vkim->dumpDialogs();
         $output = $vkim->PrintReport();
     } else {
         $output = file_get_contents('assets/templates/run.tpl');

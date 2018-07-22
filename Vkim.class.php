@@ -57,7 +57,7 @@ class Vkim {
         return $sig;
     }
 
-    public function sendRequest(string $methodName, $requestParams)
+    public function sendRequest(string $methodName, array $requestParams)
     {
         $requestParams['v'] = $this->apiVersion;
         $requestParams['access_token'] = $this->getAccessToken();
@@ -118,33 +118,63 @@ class Vkim {
         return $output;
     }
 
+    public function getMessagesByDayOutput(VkimUser $user, VkimUser $interlocutor): string
+    {
+        $messagesByDayOutput = '';
+        foreach ($this->user->messagesByDay as $date => $messagesByMe) {
+            $messagesByInterlocutor = (isset($interlocutor->messagesByDay[$date])) ? $interlocutor->messagesByDay[$date] : 0;
+            $messagesByDayOutput .= '<tr>
+                                        <td>'.date('d.m.Y', $date).'</td>
+                                        <td>'.$messagesByMe.'</td>
+                                        <td>'.$messagesByInterlocutor.'</td>
+                                    </tr>';
+        }
+        return $messagesByDayOutput;
+    }
+
+    public function fillMessagesByDay(array $messagesByDay):array
+    {
+        $dateFirst = null;
+        $dateLast = null;
+        foreach ($messagesByDay as $key => $value) {
+            if ($dateFirst === null) {
+                $dateFirst = $key;
+            }
+            $dateLast = $key;
+        }
+        if ($dateFirst !== null && $dateLast !== null && $dateFirst < $dateLast) {
+            $currentTime = $dateFirst;
+            while ($currentTime < $dateLast) {
+                $currentTime += 86400;
+                if (!isset($messagesByDay[$currentTime])) {
+                    $messagesByDay[$currentTime] = 0;
+                }
+            }
+        }
+        ksort($messagesByDay);
+        return $messagesByDay;
+    }
+
     public function PrintReport(): string
     {
 		$report = file_get_contents('assets/templates/report.tpl');
 
         $output = $report;
 		$output = $this->replaceScalarUserPlaceholders($this->user, $output, 'user');
-		$output = $this->replaceScalarUserPlaceholders($this->user, $output, 'interlocutor');
+		$output = $this->replaceScalarUserPlaceholders($this->interlocutor, $output, 'interlocutor');
 
+        $this->user->messagesByDay = $this->fillMessagesByDay($this->user->messagesByDay);
 		$labelsUser = $this->getMessagesByDayLabels($this->user->messagesByDay);
 		$dataUser = $this->getMessagesByDayData($this->user->messagesByDay);
 
+        $this->interlocutor->messagesByDay = $this->fillMessagesByDay($this->interlocutor->messagesByDay);
 		$labelsInterlocutor = $this->getMessagesByDayLabels($this->interlocutor->messagesByDay);
 		$dataInterlocutor = $this->getMessagesByDayData($this->interlocutor->messagesByDay);
 
-		$messagesByDayOutput = '';
-		foreach ($this->user->messagesByDay as $date => $messagesByMe) {
-            $messagesByInterlocutor = (isset($this->interlocutor->messagesByDay[$date])) ? $this->interlocutor->messagesByDay[$date] : 0;
-            $messagesByDayOutput .= '<tr>
-										<td>'.date('d.m.Y', $date).'</td>
-										<td>'.$messagesByMe.'</td>
-										<td>'.$messagesByInterlocutor.'</td>
-									</tr>';
-        }
+		$messagesByDayOutput = $this->getMessagesByDayOutput($this->user, $this->interlocutor);
 
 		$maxMessagesByHourUser = $this->getMaxMessagesByHour($this->user);
 		$maxMessagesByHourInterlocutor = $this->getMaxMessagesByHour($this->interlocutor);
-
 
 		// Punchcard
 		$punchTpl = file_get_contents('assets/templates/punchItem.tpl');
@@ -375,10 +405,11 @@ class Vkim {
             $vkResponse = $this->sendRequest('messages.getHistory', $properties);
             if (is_object($vkResponse)) {
                 $newMessages = (isset($vkResponse->response->items)) ? $vkResponse->response->items : [];
-				if (count($newMessages) == 0) {
+				if (count($newMessages) === 0) {
 					break;
 				}
                 $messages = array_merge($messages, $newMessages);
+                sleep(1);
             } else {
 
 			}

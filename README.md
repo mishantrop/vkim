@@ -20,3 +20,4 @@
 * Cache dialogs.
 * Check timezone for messages.
 * Highlight popular word of another interlocutor on hover.
+* Timeline Chart: count of messages or count of words.
