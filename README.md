@@ -16,6 +16,7 @@
 ![Report, part 1](https://raw.githubusercontent.com/mishantrop/vkim/master/assets/images/report_2.png "Report, part 2")
 
 # Roadmap #
+* PDF
 * Count emoji.
 * Cache dialogs.
 * Check timezone for messages.

@@ -1,3 +1,5 @@
+import Chart from 'chart.js';
+
 class App {
 	constructor() {
 		console.log('App');
